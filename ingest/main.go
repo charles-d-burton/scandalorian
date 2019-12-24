@@ -14,6 +14,12 @@ import (
 	"github.com/spf13/viper"
 )
 
+//MessageBus Interface for making generic connections to message busses
+type MessageBus interface {
+	Connect(host, port string) error
+	Publish(scan *Scan) error
+}
+
 //ScanRequest object instructing system on how to scan.
 type ScanRequest struct {
 	ID      string `json:"id,omitempty"`

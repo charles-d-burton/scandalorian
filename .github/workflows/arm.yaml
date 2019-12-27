@@ -1,12 +1,12 @@
 on: [push]
 
 jobs:
-  testactions_job:
+  actions_job:
     runs-on: ubuntu-18.04
     name: A job to buil multi architecture actions
     steps:
     - name: Build on arm64
-      uses: charles-d-burton/kanscan/ingest@master
+      uses: charles-d-burton/kanscan@master
       with:
         architecture: arm64
         distribution: ubuntu18.04

@@ -13,4 +13,3 @@ jobs:
         run: |
           apt update
           apt install -y libpcap-dev
-          go build -o ingest

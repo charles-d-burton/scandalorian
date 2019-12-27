@@ -10,6 +10,6 @@ jobs:
       with:
         architecture: arm64
         distribution: ubuntu18.04
-        run: |
-          apt update
-          apt install -y libpcap-dev
+        #run: |
+        #  apt update
+        #  apt install -y libpcap-dev

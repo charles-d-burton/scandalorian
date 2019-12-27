@@ -14,6 +14,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+
+
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
@@ -30,7 +32,7 @@ type ScanRequest struct {
 //Scan structure to send to message queue for scanning
 type Scan struct {
 	IP      string      `json:"ip"`
-	IsLast  bool        `json:"is_last"`
+	Type    ScanType    `json:"type"`
 	Request ScanRequest `json:"scan_request"`
 }
 
@@ -99,14 +101,10 @@ func enQueueRequest(scanreq *ScanRequest) error {
 			return errors.New("Unknown Host")
 		} else {
 			fmt.Println("IP address: ", addr)
-			for idx, address := range addr {
+			for _, address := range addr {
 				var scan Scan
-				scan.IsLast = false
 				scan.IP = address.String()
 				scan.Request = *scanreq
-				if idx == len(addr)-1 {
-					scan.IsLast = true
-				}
 				scans = append(scans, scan)
 			}
 		}
@@ -116,12 +114,9 @@ func enQueueRequest(scanreq *ScanRequest) error {
 			return err
 		}
 		var scan Scan
-		for idx, addr := range addrs {
+		for _, addr := range addrs {
 			scan.IP = addr
 			scan.Request = *scanreq
-			if idx == len(addr)-1 {
-				scan.IsLast = true
-			}
 			scans = append(scans, scan)
 		}
 

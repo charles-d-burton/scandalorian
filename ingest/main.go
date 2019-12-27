@@ -9,12 +9,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charles-d-burton/kanscan/shared"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
-
-
 
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
@@ -31,9 +30,9 @@ type ScanRequest struct {
 
 //Scan structure to send to message queue for scanning
 type Scan struct {
-	IP      string      `json:"ip"`
-	Type    ScanType    `json:"type"`
-	Request ScanRequest `json:"scan_request"`
+	IP      string          `json:"ip"`
+	Type    shared.ScanType `json:"type"`
+	Request ScanRequest     `json:"scan_request"`
 }
 
 func main() {
@@ -105,6 +104,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 				var scan Scan
 				scan.IP = address.String()
 				scan.Request = *scanreq
+				scan.Type = shared.Discovery
 				scans = append(scans, scan)
 			}
 		}
@@ -117,6 +117,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 		for _, addr := range addrs {
 			scan.IP = addr
 			scan.Request = *scanreq
+			scan.Type = shared.Discovery
 			scans = append(scans, scan)
 		}
 

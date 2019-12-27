@@ -3,6 +3,7 @@ module github.com/charles-d-burton/kanscan/ingest/
 go 1.13
 
 require (
+	github.com/charles-d-burton/kanscan v0.0.0-20191227212811-a2b95f3c658f
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/google/uuid v1.1.1

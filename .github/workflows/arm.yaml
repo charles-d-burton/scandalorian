@@ -6,7 +6,7 @@ jobs:
     name: A job to build multi architecture actions
     steps:
     - name: Build on arm64
-      uses: ingest/action.yml
+      uses: charles-d-burton/kanscan/ingest@master
       with:
         architecture: arm64
         distribution: ubuntu18.04

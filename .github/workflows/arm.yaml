@@ -1,5 +1,4 @@
 on: [push]
-
 jobs:
   actions_job:
     runs-on: ubuntu-18.04

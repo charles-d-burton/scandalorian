@@ -38,6 +38,8 @@ github.com/charles-d-burton/kanscan v0.0.0-20191227212811-a2b95f3c658f h1:gX1tSv
 github.com/charles-d-burton/kanscan v0.0.0-20191227212811-a2b95f3c658f/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/charles-d-burton/kanscan v0.0.0-20191227213119-fe833fd3e0ad h1:ZbY/zyQeWViJ0fHToi7XD8tRCGCogk1qNVfmM9R0Bm8=
 github.com/charles-d-burton/kanscan v0.0.0-20191227213119-fe833fd3e0ad/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
+github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9 h1:tOV5eVg7RIt2H3xmzlNxzuPuDT+TtFpgx3bXbZ+OGXo=
+github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=

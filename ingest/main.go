@@ -11,7 +11,7 @@ import (
 	"github.com/charles-d-burton/kanscan/shared"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -23,7 +23,6 @@ type MessageBus interface {
 
 var (
 	messageBus MessageBus
-	log        = logrus.New()
 )
 
 //ScanRequest object instructing system on how to scan.
@@ -41,6 +40,7 @@ type Scan struct {
 }
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
 	v := viper.New()
 	v.SetEnvPrefix("ingest")
 	v.AutomaticEnv()
@@ -169,6 +169,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 	}
 	for _, scan := range scans {
 		log.Println(scan)
+		messageBus.Publish(&scan)
 	}
 	return nil
 }

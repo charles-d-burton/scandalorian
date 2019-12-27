@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 	"github.com/charles-d-burton/kanscan/shared"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -20,6 +20,11 @@ type MessageBus interface {
 	Connect(host, port string) error
 	Publish(scan *Scan) error
 }
+
+var (
+	messageBus MessageBus
+	log        = logrus.New()
+)
 
 //ScanRequest object instructing system on how to scan.
 type ScanRequest struct {
@@ -39,10 +44,50 @@ func main() {
 	v := viper.New()
 	v.SetEnvPrefix("ingest")
 	v.AutomaticEnv()
-
+	if !v.IsSet("port") || !v.IsSet("host") {
+		log.Fatal("Must set host and port for NATS server")
+	}
+	bus, err := connectBus(v)
+	if err != nil {
+		log.Fatal(err)
+	}
+	messageBus = bus
 	router := gin.Default()
 	router.POST("/scan", handlePost)
 	router.Run(":9090")
+}
+
+//Connect to a message bus, this is abstracted to an interface so implementations of other busses e.g. Rabbit are easier
+//TODO: Clean this mess up
+func connectBus(v *viper.Viper) (MessageBus, error) {
+	var bus MessageBus
+	if v.IsSet("bus_type") {
+		busType := v.GetString("bus_type")
+		switch busType {
+		case "nats":
+			var natsConn NatsConn
+			err := natsConn.Connect(v.GetString("host"), v.GetString("port"))
+			if err != nil {
+				return nil, err
+			}
+			bus = &natsConn
+		default:
+			var natsConn NatsConn
+			err := natsConn.Connect(v.GetString("host"), v.GetString("port"))
+			if err != nil {
+				return nil, err
+			}
+			bus = &natsConn
+		}
+	} else {
+		var natsConn NatsConn
+		err := natsConn.Connect(v.GetString("host"), v.GetString("port"))
+		if err != nil {
+			return nil, err
+		}
+		bus = &natsConn
+	}
+	return bus, nil
 }
 
 func handlePost(c *gin.Context) {

@@ -5,16 +5,16 @@ on:
     branches:
       - master
 jobs:
-  ingest-build-base:
-    runs-on: ubuntu-latest
-    name: Build the ingest application
-    steps:
-      - uses: actions/checkout@v1
-      - name: Docker Login
-        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
-      - name: Build Base
-        working-directory: ingest
-        run: docker build -t ingest:base --target build --file=./Dockerfile .
+  #ingest-build-base:
+  #  runs-on: ubuntu-latest
+  #  name: Build the ingest application
+  #  steps:
+  #    - uses: actions/checkout@v1
+  #    - name: Docker Login
+  #      run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+  #   - name: Build Base
+  #      working-directory: ingest
+  #      run: docker build -t ingest:base --target build --file=./Dockerfile .
   ingest-build-arm:
     runs-on: ubuntu-latest
     name: Build arm version of ingest
@@ -25,7 +25,7 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
         working-directory: ingest
-        run: docker build -t ingest:arm --target=arm --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t ingest:arm --target=arm --file=./Dockerfile .
   ingest-build-arm64:
     runs-on: ubuntu-latest
     name: Build arm64 version of ingest
@@ -36,7 +36,7 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
         working-directory: ingest
-        run: docker build -t ingest:arm64 --target=arm64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t ingest:arm64 --target=arm64 --file=./Dockerfile .
   ingest-build-amd64:
     runs-on: ubuntu-latest
     name: Build amd64 version of ingest
@@ -47,7 +47,7 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
         working-directory: ingest
-        run: docker build -t ingest:amd64 --target=amd64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t ingest:amd64 --target=amd64 --file=./Dockerfile .
   ingest-build-manifest:
     runs-on: ubuntu-latest
     name: Collect manifest and push

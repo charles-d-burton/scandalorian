@@ -18,8 +18,8 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=arm-linux --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L./libpcap-$PCAPV -s" go build -o ingest-arm . && \
-    file ingest-arm
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L./libpcap-$PCAPV -s -w" go build -installsuffix cgo -a -o ingest . && \
+    file ingest
 
 
 
@@ -43,9 +43,8 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=aarch64-unknown-linux-gnu --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L./libpcap-$PCAPV -s" go build -o ingest-arm64 . && \
-    file ingest-arm64
-
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L./libpcap-$PCAPV -s -w" go build -installsuffix cgo -a -o ingest . && \
+    file ingest
 
 
 
@@ -68,22 +67,22 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L./libpcap-$PCAPV -s" go build -o ingest-amd64 . && \
-    file ingest-amd64
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L./libpcap-$PCAPV -s -w" go build -installsuffix cgo -a -o ingest . && \
+    file ingest
 
 
 
 FROM scratch as arm
-COPY --from=build-arm /app/ingest-arm /go/bin/ingest
+COPY --from=build-arm /app/ingest /go/bin/ingest
 COPY --from=build-arm /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT [ "/go/bin/ingest" ]
 
 FROM scratch as arm64
-COPY --from=build-arm64 /app/ingest-arm64 /go/bin/ingest
+COPY --from=build-arm64 /app/ingest /go/bin/ingest
 COPY --from=build-arm64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT ["/go/bin/ingest"]
 
 FROM scratch as amd64
-COPY --from=build-amd64 /app/ingest-amd64 /go/bin/ingest
+COPY --from=build-amd64 /app/ingest /go/bin/ingest
 COPY --from=build-amd64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT ["/go/bin/ingest"]

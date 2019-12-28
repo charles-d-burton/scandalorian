@@ -74,13 +74,13 @@ RUN cd /app && \
 
 
 FROM scratch as arm
-COPY --from=build-arm /app/ingest-arm ingest
-ENTRYPOINT [ "ingest" ]
+COPY --from=build-arm /app/ingest-arm /go/bin/ingest
+ENTRYPOINT [ "/go/bin/ingest" ]
 
 FROM scratch as arm64
-COPY --from=build-arm64 /app/ingest-arm64 ingest
-ENTRYPOINT ["ingest"]
+COPY --from=build-arm64 /app/ingest-arm64 /go/bin/ingest
+ENTRYPOINT ["/go/bin/ingest"]
 
 FROM scratch as amd64
-COPY --from=build-amd64 /app/ingest-amd64 ingest
-ENTRYPOINT ["ingest"]
+COPY --from=build-amd64 /app/ingest-amd64 /go/bin/ingest
+ENTRYPOINT ["/go/bin/ingest"]

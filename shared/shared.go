@@ -11,9 +11,10 @@ const (
 
 //ScanRequest object instructing system on how to scan.
 type ScanRequest struct {
-	ID      string `json:"id,omitempty"`
-	Address string `json:"address,omitempty"`
-	Host    string `json:"host,omitempty"`
+	ID      string   `json:"id,omitempty"`
+	Address string   `json:"address,omitempty"`
+	Host    string   `json:"host,omitempty"`
+	Ports   []string `json:"ports,omitempty"`
 }
 
 //Scan structure to send to message queue for scanning

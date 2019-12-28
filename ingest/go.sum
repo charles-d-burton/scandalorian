@@ -34,14 +34,6 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/charles-d-burton/kanscan v0.0.0-20191227212811-a2b95f3c658f h1:gX1tSvVqeNBBAr7YaOvq4C/DBV8pLiF9SAxFEwCknhI=
-github.com/charles-d-burton/kanscan v0.0.0-20191227212811-a2b95f3c658f/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
-github.com/charles-d-burton/kanscan v0.0.0-20191227213119-fe833fd3e0ad h1:ZbY/zyQeWViJ0fHToi7XD8tRCGCogk1qNVfmM9R0Bm8=
-github.com/charles-d-burton/kanscan v0.0.0-20191227213119-fe833fd3e0ad/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
-github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9 h1:tOV5eVg7RIt2H3xmzlNxzuPuDT+TtFpgx3bXbZ+OGXo=
-github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
-github.com/charles-d-burton/kanscan v0.0.0-20191228021738-ca0e5fe76a42 h1:JCw0hi+a7uIEgITV2mHU7A2gk8Mv7ceA1AT0k8N42Qc=
-github.com/charles-d-burton/kanscan v0.0.0-20191228021738-ca0e5fe76a42/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/charles-d-burton/kanscan v0.0.0-20191228232607-bfbf2d6131cd h1:ZBZDklyG821xtnKdABgsbf5YkEg9+NnplNNhWxzx5wk=
 github.com/charles-d-burton/kanscan v0.0.0-20191228232607-bfbf2d6131cd/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=

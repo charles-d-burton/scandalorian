@@ -18,7 +18,7 @@ import (
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
-	Publish(scan *Scan) error
+	Publish(scan *shared.Scan) error
 	Close()
 }
 
@@ -26,20 +26,6 @@ var (
 	messageBus   MessageBus
 	enqueueTopic string
 )
-
-//ScanRequest object instructing system on how to scan.
-type ScanRequest struct {
-	ID      string `json:"id,omitempty"`
-	Address string `json:"address,omitempty"`
-	Host    string `json:"host,omitempty"`
-}
-
-//Scan structure to send to message queue for scanning
-type Scan struct {
-	IP      string          `json:"ip"`
-	Type    shared.ScanType `json:"type"`
-	Request ScanRequest     `json:"scan_request"`
-}
 
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
@@ -97,7 +83,7 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 }
 
 func handlePost(c *gin.Context) {
-	var scanRequest ScanRequest
+	var scanRequest shared.ScanRequest
 	if err := c.ShouldBindJSON(&scanRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -143,8 +129,8 @@ func handlePost(c *gin.Context) {
 	}
 }
 
-func enQueueRequest(scanreq *ScanRequest) error {
-	var scans []Scan
+func enQueueRequest(scanreq *shared.ScanRequest) error {
+	var scans []shared.Scan
 	if scanreq.Host != "" {
 		addr, err := net.LookupIP(scanreq.Host)
 		if err != nil {
@@ -152,7 +138,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 		} else {
 			fmt.Println("IP address: ", addr)
 			for _, address := range addr {
-				var scan Scan
+				var scan shared.Scan
 				scan.IP = address.String()
 				scan.Request = *scanreq
 				scan.Type = shared.Discovery
@@ -164,7 +150,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 		if err != nil {
 			return err
 		}
-		var scan Scan
+		var scan shared.Scan
 		for _, addr := range addrs {
 			scan.IP = addr
 			scan.Request = *scanreq

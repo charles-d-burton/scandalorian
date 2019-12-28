@@ -8,6 +8,9 @@
 		},
 		{
 			"path": ".github/workflows"
+		},
+		{
+			"path": "scan-engine"
 		}
 	],
 	"settings": {}

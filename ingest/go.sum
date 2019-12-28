@@ -42,6 +42,8 @@ github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9 h1:tOV5eV
 github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/charles-d-burton/kanscan v0.0.0-20191228021738-ca0e5fe76a42 h1:JCw0hi+a7uIEgITV2mHU7A2gk8Mv7ceA1AT0k8N42Qc=
 github.com/charles-d-burton/kanscan v0.0.0-20191228021738-ca0e5fe76a42/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
+github.com/charles-d-burton/kanscan v0.0.0-20191228232607-bfbf2d6131cd h1:ZBZDklyG821xtnKdABgsbf5YkEg9+NnplNNhWxzx5wk=
+github.com/charles-d-burton/kanscan v0.0.0-20191228232607-bfbf2d6131cd/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
@@ -373,6 +375,8 @@ golang.org/x/sys v0.0.0-20191210023423-ac6580df4449/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20191220142924-d4481acd189f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 h1:Dho5nD6R3PcW2SH1or8vS0dszDaXRxIw55lBX7XiE5g=
 golang.org/x/sys v0.0.0-20191224085550-c709ea063b76/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8 h1:JA8d3MPx/IToSyXZG/RhwYEtfrKO1Fxrqe8KrkiLXKM=
+golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

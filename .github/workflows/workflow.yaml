@@ -60,7 +60,11 @@ jobs:
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64 charlesdburton/kanscan-ingest:arm charlesdburton/kanscan-ingest:arm64 
+        run: |
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-ingest:latest \
+          --amend charlesdburton/kanscan-ingest:amd64 \
+          --amend charlesdburton/kanscan-ingest:arm \
+          --amend charlesdburton/kanscan-ingest:arm64 
       - name: Annotate Arm
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm kanscan-ingest:latest charlesdburton/kanscan-ingest:arm
       - name: Annotate Arm64

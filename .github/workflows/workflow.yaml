@@ -3,7 +3,7 @@ name: Kanscan Build
 on:
   push:
     branches:
-      -master
+      - master
 jobs:
   ingest-build-base:
     runs-on: ubuntu-latest

@@ -177,6 +177,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 		log.Println(scan)
 		err := messageBus.Publish(&scan)
 		if err != nil {
+			log.Warn(err)
 			return err
 		}
 	}

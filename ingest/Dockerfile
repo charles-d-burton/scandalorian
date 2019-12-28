@@ -10,4 +10,4 @@ RUN mkdir /app
 WORKDIR /app
 COPY ./ .
 RUN ls -al
-RUN build.sh
+RUN ./build.sh

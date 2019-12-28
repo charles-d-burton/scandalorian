@@ -1,8 +1,56 @@
-on: [push]
+name: Kanscan Build
+
+on:
+  push:
+    branches:
+      -master
 jobs:
-  arm_job:
-    runs-on: ubuntu-18.04
-    name: A job to build multi architecture actions
+  ingest-build-base:
+    runs-on: ubuntu-latest
+    name: Build the ingest application
     steps:
-    - name: Build
-      uses: charles-d-burton/kanscan/ingest@master
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Base
+        run: docker build -t ingest:base ingest/Dockerfile
+  ingest-build-arm:
+    runs-on: ubuntu-latest
+    name: Build arm version of ingest
+    needs: ["ingest-build-base"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm
+        run: echo "building arm"
+  ingest-build-arm64:
+    runs-on: ubuntu-latest
+    name: Build arm64 version of ingest
+    needs: ["ingest-build-base"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm64
+        run: echo "building arm64"
+  ingest-build-amd64:
+    runs-on: ubuntu-latest
+    name: Build amd64 version of ingest
+    needs: ["ingest-build-base"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build AMD64
+        run: echo "building amd64"
+  ingest-build-manifest:
+    runs-on: ubuntu-latest
+    name: Collect manifest and push
+    needs: ["ingest-build-base","ingest-build-arm", "ingest-build-arm64", "ingest-build-amd64"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Manifest
+        run: echo "building manifest"

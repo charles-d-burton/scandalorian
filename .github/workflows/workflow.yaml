@@ -24,7 +24,7 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
         working-directory: ingest
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/ingest-arm --target=arm --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:arm --target=arm --file=./Dockerfile .
       - name: Push Image
         run: docker push charlesdburton/ingest-arm:latest
   ingest-build-arm64:
@@ -36,7 +36,7 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
         working-directory: ingest
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/ingest-arm64 --target=arm64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:arm64 --target=arm64 --file=./Dockerfile .
       - name: Push Image
         run: docker push charlesdburton/ingest-arm64:latest
   ingest-build-amd64:
@@ -48,7 +48,7 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
         working-directory: ingest
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/ingest-amd64 --target=amd64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:amd64 --target=amd64 --file=./Dockerfile .
       - name: Push Image
         run: docker push charlesdburton/ingest-amd64:latest
   ingest-build-manifest:
@@ -60,4 +60,13 @@ jobs:
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
-        run: echo "building manifest"
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64 charlesdburton/kanscan-ingest:arm charlesdburton/kanscan-ingest:arm64 
+      - name: Annotate Arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest --arch arm kanscan-ingest:latest charlesdburton/kanscan-ingest:arm
+      - name: Annotate Arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest --arch arm64 kanscan-ingest:latest charlesdburton/kanscan-ingest:arm64
+      - name: Annotate AMD64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest --arch amd64 kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64
+      - name: Push Manifest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-ingest:latest
+

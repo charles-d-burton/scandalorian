@@ -11,7 +11,7 @@ require (
 	github.com/OneOfOne/xxhash v1.2.6 // indirect
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/antihax/optional v1.0.0 // indirect
-	github.com/charles-d-burton/kanscan v0.0.0-20191227222505-2c40bac328a9
+	github.com/charles-d-burton/kanscan v0.0.0-20191228021738-ca0e5fe76a42
 	github.com/coreos/bbolt v1.3.3 // indirect
 	github.com/coreos/etcd v3.3.18+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect

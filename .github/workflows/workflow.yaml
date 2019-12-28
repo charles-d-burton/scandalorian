@@ -26,7 +26,7 @@ jobs:
         working-directory: ingest
         run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:arm --target=arm --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/ingest-arm:latest
+        run: docker push charlesdburton/kanscan-ingest:arm
   ingest-build-arm64:
     runs-on: ubuntu-latest
     name: Build arm64 version of ingest
@@ -38,7 +38,7 @@ jobs:
         working-directory: ingest
         run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:arm64 --target=arm64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/ingest-arm64:latest
+        run: docker push charlesdburton/kanscan-ingest:arm64
   ingest-build-amd64:
     runs-on: ubuntu-latest
     name: Build amd64 version of ingest
@@ -50,7 +50,7 @@ jobs:
         working-directory: ingest
         run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:amd64 --target=amd64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/ingest-amd64:latest
+        run: docker push charlesdburton/kanscan-ingest:amd64
   ingest-build-manifest:
     runs-on: ubuntu-latest
     name: Collect manifest and push

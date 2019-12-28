@@ -5,6 +5,7 @@ RUN apt update && apt install -y \
 		libc6-dev-armhf-cross\
         byacc flex \
         libpcap-dev \
+        file
 RUN mkdir /app
 WORKDIR /app
 COPY ./ .
@@ -73,13 +74,13 @@ RUN cd /app && \
 
 
 FROM scratch as arm
-COPY --from=build-arm ingest-arm ingest
+COPY --from=build-arm /app/ingest-arm ingest
 ENTRYPOINT [ "ingest" ]
 
 FROM scratch as arm64
-COPY --from=build-arm64 ingest-arm64 ingest
+COPY --from=build-arm64 /app/ingest-arm64 ingest
 ENTRYPOINT ["ingest"]
 
 FROM scratch as amd64
-COPY --from=build-amd64 ingest-amd64 ingest
+COPY --from=build-amd64 /app/ingest-amd64 ingest
 ENTRYPOINT ["ingest"]

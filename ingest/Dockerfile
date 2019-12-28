@@ -1,7 +1,12 @@
-FROM golang:alpine as build
+FROM golang:latest as build
 
-RUN apk add --update --no-cache ca-certificates git gcc libc-dev libpcap-dev
+RUN apt update && apt install -y \
+		gcc-arm-linux-gnueabihf \
+        gcc-aarch64-linux-gnu \
+		libc6-dev-armhf-cross\
+        byacc flex \
+        libpcap-dev
 RUN mkdir /app
-RUN uname -a
 WORKDIR /app
 COPY ./ .
+RUN build.sh

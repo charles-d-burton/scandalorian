@@ -18,7 +18,7 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=arm-linux --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L./libpcap-$PCAPV" go build -o ingest-arm . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L./libpcap-$PCAPV -s" go build -o ingest-arm . && \
     file ingest-arm
 
 
@@ -43,7 +43,7 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=aarch64-unknown-linux-gnu --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L./libpcap-$PCAPV" go build -o ingest-arm64 . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L./libpcap-$PCAPV -s" go build -o ingest-arm64 . && \
     file ingest-arm64
 
 
@@ -68,7 +68,7 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L./libpcap-$PCAPV" go build -o ingest-amd64 . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L./libpcap-$PCAPV -s" go build -o ingest-amd64 . && \
     file ingest-amd64
 
 

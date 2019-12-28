@@ -62,15 +62,15 @@ jobs:
       - name: Build Manifest
         run: |
           DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-ingest:latest \
-          --amend charlesdburton/kanscan-ingest:amd64 \
-          --amend charlesdburton/kanscan-ingest:arm \
-          --amend charlesdburton/kanscan-ingest:arm64 
+          charlesdburton/kanscan-ingest:amd64 \
+          charlesdburton/kanscan-ingest:arm \
+          charlesdburton/kanscan-ingest:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm kanscan-ingest:latest charlesdburton/kanscan-ingest:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 kanscan-ingest:latest charlesdburton/kanscan-ingest:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-ingest:latest
 

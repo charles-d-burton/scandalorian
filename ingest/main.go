@@ -19,6 +19,7 @@ import (
 type MessageBus interface {
 	Connect(host, port string) error
 	Publish(scan *Scan) error
+	Close()
 }
 
 var (
@@ -51,6 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer bus.Close()
 	messageBus = bus
 	router := gin.Default()
 	router.POST("/scan", handlePost)

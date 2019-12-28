@@ -9,4 +9,5 @@ RUN apt update && apt install -y \
 RUN mkdir /app
 WORKDIR /app
 COPY ./ .
+RUN ls -al
 RUN build.sh

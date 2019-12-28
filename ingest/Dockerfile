@@ -14,7 +14,7 @@ ENV PCAPV=1.9.1
 ENV CC=arm-linux-gnueabi-gcc
 RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     tar xvf libpcap-$PCAPV.tar.gz && \
-    cd libpcap-$PCAPV \
+    cd libpcap-$PCAPV && \
     ./configure --host=arm-linux --with-pcap=linux && \
     make
 RUN cd /app && \

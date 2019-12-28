@@ -7,5 +7,4 @@ type ScanType int
 const (
 	Discovery ScanType = iota
 	Nmap
-	EnqueueTopic string = "enqueue"
 )

@@ -1,0 +1,8 @@
+on: [push]
+jobs:
+  arm_job:
+    runs-on: ubuntu-18.04
+    name: A job to build multi architecture actions
+    steps:
+    - name: Build
+      uses: charles-d-burton/kanscan/ingest@master

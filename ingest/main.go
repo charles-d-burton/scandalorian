@@ -23,7 +23,8 @@ type MessageBus interface {
 }
 
 var (
-	messageBus MessageBus
+	messageBus   MessageBus
+	enqueueTopic string
 )
 
 //ScanRequest object instructing system on how to scan.
@@ -47,6 +48,9 @@ func main() {
 	v.AutomaticEnv()
 	if !v.IsSet("port") || !v.IsSet("host") {
 		log.Fatal("Must set host and port for NATS server")
+	}
+	if !v.IsSet("enqueue_topic") {
+		enqueueTopic = "ingest-enqueue"
 	}
 	bus, err := connectBus(v)
 	if err != nil {
@@ -171,7 +175,10 @@ func enQueueRequest(scanreq *ScanRequest) error {
 	}
 	for _, scan := range scans {
 		log.Println(scan)
-		messageBus.Publish(&scan)
+		err := messageBus.Publish(&scan)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

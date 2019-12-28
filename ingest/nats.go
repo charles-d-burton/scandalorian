@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/charles-d-burton/kanscan/shared"
+
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,7 +31,7 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 	if err != nil {
 		return err
 	}
-	err = natsConn.Conn.Publish(shared.EnqueueTopic, data)
+	err = natsConn.Conn.Publish(enqueueTopic, data)
 	return err
 }
 

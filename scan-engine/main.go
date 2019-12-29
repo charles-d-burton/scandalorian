@@ -19,8 +19,8 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-	"flag"
 	"net"
 	"time"
 
@@ -62,27 +62,29 @@ func main() {
 		log.Fatal(err)
 	}
 	defer bus.Close()
+	defer util.Run()()
+	router, err := routing.New()
+	if err != nil {
+		//log.Fatal("routing error:", err)
+		log.Fatal("router error:", err)
+	}
 	dch, err := bus.Subscribe(dequeueTopic)
 	if err != nil {
 		log.Fatal(err)
 	}
 	for data := range dch {
 		log.Println(string(data))
-	}
-	//TODO: REDO
-	defer util.Run()()
-	router, err := routing.New()
-	if err != nil {
-		//log.Fatal("routing error:", err)
-		log.Println("router error:", err)
-	}
-	for _, arg := range flag.Args() {
+		var scan shared.Scan
+		err := json.Unmarshal(data, &scan)
+		if err != nil {
+			log.Warn(err)
+		}
 		var ip net.IP
-		if ip = net.ParseIP(arg); ip == nil {
-			log.Printf("non-ip target: %q", arg)
+		if ip = net.ParseIP(scan.IP); ip == nil {
+			log.Printf("non-ip target: %q", scan.IP)
 			continue
 		} else if ip = ip.To4(); ip == nil {
-			log.Printf("non-ipv4 target: %q", arg)
+			log.Printf("non-ipv4 target: %q", scan.IP)
 			continue
 		}
 		// Note:  newScanner creates and closes a pcap Handle once for
@@ -315,7 +317,7 @@ func (s *scanner) scan() error {
 		} else if tcp.RST {
 			//log.Printf("  port %v closed", tcp.SrcPort)
 		} else if tcp.SYN && tcp.ACK {
-			log.Printf("  port %v open", tcp.SrcPort)
+			log.Info("  port %v open", tcp.SrcPort)
 		} else {
 			// log.Printf("ignoring useless packet")
 		}

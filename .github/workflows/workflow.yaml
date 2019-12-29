@@ -114,11 +114,11 @@ jobs:
           charlesdburton/kanscan-scan-engine:arm \
           charlesdburton/kanscan-scan-engine:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-scan-engine:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-scan-engine:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-scan-engine:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-scan-engine:latest
 

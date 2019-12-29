@@ -6,8 +6,6 @@ COPY ./ .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm go build --ldflags "-w -s" -a -o ingest . && \
     file ingest
 
-#CGO_LDFLAGS="-L./libpcap-$PCAPV -s -w"
-
 FROM golang:latest as build-arm64
 RUN mkdir /app
 WORKDIR /app

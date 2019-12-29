@@ -24,12 +24,12 @@ import (
 	"net"
 	"time"
 
+	"github.com/charles-d-burton/gopacket"
+	"github.com/charles-d-burton/gopacket/examples/util"
+	"github.com/charles-d-burton/gopacket/layers"
+	"github.com/charles-d-burton/gopacket/pcap"
+	"github.com/charles-d-burton/gopacket/routing"
 	"github.com/charles-d-burton/kanscan/shared"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/examples/util"
-	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
-	"github.com/google/gopacket/routing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

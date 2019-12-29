@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/rand"
 	"net"
+	"strconv"
 	"time"
 
 	"github.com/Ullaakut/nmap"
@@ -303,9 +304,11 @@ func (worker *PcapWorker) start(id int) error {
 		for {
 			// Send one packet per loop iteration until we've sent packets
 			// to all of ports [1, 65535].
+			var port = 0
 			if tcp.DstPort < 65535 {
 				start = time.Now()
 				tcp.DstPort++
+				port++
 				if err := worker.send(&eth, &ip4, &tcp); err != nil {
 					log.Infof("error sending to port %v: %v", tcp.DstPort, err)
 				}
@@ -346,7 +349,7 @@ func (worker *PcapWorker) start(id int) error {
 			} else if tcp.RST {
 				//log.Printf("  port %v closed", tcp.SrcPort)
 			} else if tcp.SYN && tcp.ACK {
-				//scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(int(tcp.SrcPort)))
+				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
 				log.Infof("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id)
 			} else {
 				// log.Printf("ignoring useless packet")

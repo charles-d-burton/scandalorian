@@ -290,7 +290,7 @@ func (worker *PcapWorker) start() error {
 		// against it and discard useless packets.
 		ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
 		//start := time.Now()
-		for {
+		for p := 1; p <= 65535; p++ {
 			// Send one packet per loop iteration until we've sent packets
 			// to all of ports [1, 65535].
 			if tcp.DstPort < 65535 {

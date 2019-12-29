@@ -6,6 +6,6 @@ mkdir .nmap
 
 git clone https://github.com/vulnersCom/nmap-vulners .nmap
 
-/bin/nmap --datadir .nmap --script-updatedb
+nmap --datadir .nmap --script-updatedb
 
 /go/bin/scan-engine

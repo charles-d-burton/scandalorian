@@ -121,14 +121,26 @@ func createWorkerPool() error {
 		return err
 	}
 	for _, iface := range ifaces {
-		ch := make(chan *ScanWork, 100)
-		chansByIface[iface.Name] = ch
-		var worker PcapWorker
-		err := worker.initializeWorker(&iface)
+		addrs, err := iface.Addrs()
 		if err != nil {
 			return err
 		}
-		go worker.start() //Start a single worker for now, revisit this later with better error handling
+		for _, addr := range addrs {
+			if inet, ok := addr.(*net.IPNet); ok { //Make sure we ignore loopback
+				if !inet.IP.IsLoopback() {
+					ch := make(chan *ScanWork, 100)
+					chansByIface[iface.Name] = ch
+					for w := 1; w <= 3; w++ {
+						var worker PcapWorker
+						err := worker.initializeWorker(&iface)
+						if err != nil {
+							return err
+						}
+						go worker.start() //Start a single worker for now, revisit this later with better error handling
+					}
+				}
+			}
+		}
 	}
 	return nil
 }

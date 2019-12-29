@@ -5,8 +5,10 @@ import (
 	"errors"
 	"math/rand"
 	"net"
+	"strconv"
 	"time"
 
+	"github.com/Ullaakut/nmap"
 	"github.com/charles-d-burton/gopacket"
 	"github.com/charles-d-burton/gopacket/examples/util"
 	"github.com/charles-d-burton/gopacket/layers"
@@ -145,7 +147,7 @@ func createWorkerPool(workers int) error {
 						if err != nil {
 							return err
 						}
-						go worker.start(w) //Start a single worker for now, revisit this later with better error handling
+						go worker.start(w)
 					}
 				}
 			}
@@ -268,7 +270,7 @@ func (worker *PcapWorker) start(id int) error {
 	log.Infof("Setting src port to: %d", srcPort)
 	for scw := range worker.Reqs {
 		//Scan the desired endpoint
-
+		scw.Scan.Request.Ports = make([]string, 0)
 		log.Infof("Received scan Request on PcapWorker for Iface: %v on worker %d", worker.Iface.Name, id)
 		// First off, get the MAC address we should be sending packets to.
 		hwaddr, err := worker.getHwAddr(scw)
@@ -345,11 +347,47 @@ func (worker *PcapWorker) start(id int) error {
 			} else if tcp.RST {
 				//log.Printf("  port %v closed", tcp.SrcPort)
 			} else if tcp.SYN && tcp.ACK {
+				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(int(tcp.SrcPort)))
 				log.Infof("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id)
 			} else {
 				// log.Printf("ignoring useless packet")
 			}
 		}
+		//pdef = strings.Join(scw.Scan.Request.Ports, ",")
+		scanner, err := nmap.NewScanner(
+			nmap.WithTargets(scw.Dst.String()),
+			nmap.WithPorts(scw.Scan.Request.Ports...),
+			nmap.WithServiceInfo(),
+			nmap.WithTimingTemplate(nmap.TimingAggressive),
+			// Filter out hosts that don't have any open ports
+			nmap.WithFilterHost(func(h nmap.Host) bool {
+				// Filter out hosts with no open ports.
+				for idx := range h.Ports {
+					if h.Ports[idx].Status() == "open" {
+						return true
+					}
+				}
+
+				return false
+			}),
+		)
+		if err != nil {
+			log.Fatalf("unable to create nmap scanner: %v", err)
+		}
+
+		result, _, err := scanner.Run()
+		if err != nil {
+			log.Fatalf("nmap scan failed: %v", err)
+		}
+
+		for _, host := range result.Hosts {
+			log.Infof("Host %s\n", host.Addresses[0])
+
+			for _, port := range host.Ports {
+				log.Infof("\tPort %d open service\n", port.ID)
+			}
+		}
+
 	}
 	return nil
 }

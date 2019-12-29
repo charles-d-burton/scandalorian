@@ -355,6 +355,7 @@ func (worker *PcapWorker) start(id int) error {
 				// log.Printf("ignoring useless packet")
 			}
 		}
+		log.Info("port scan complete, starting vulnerability scan")
 		//pdef = strings.Join(scw.Scan.Request.Ports, ",")
 		scanner, err := nmap.NewScanner(
 			nmap.WithTargets(scw.Dst.String()),
@@ -389,6 +390,7 @@ func (worker *PcapWorker) start(id int) error {
 				log.Infof("\tPort %d open service\n", port.ID)
 			}
 		}
+		log.Info("Vulnerability scan complete")
 
 	}
 	return nil

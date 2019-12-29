@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	workers      int
 	dequeueTopic string
 	chansByIface = make(map[string]chan *ScanWork)
 )
@@ -59,6 +60,14 @@ func main() {
 	}
 	if !v.IsSet("dequeue_topic") {
 		dequeueTopic = "ingest-enqueue"
+	}
+	if !v.IsSet("workers") {
+		workers = 5
+	} else {
+		workers = v.GetInt("workers")
+		if workers < 1 {
+			workers = 5
+		}
 	}
 	bus, err := connectBus(v)
 	if err != nil {
@@ -115,7 +124,7 @@ func main() {
 }
 
 //createWorkerPool generates the worker queues and the workers to process them
-func createWorkerPool() error {
+func createWorkerPool(workers int) error {
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return err
@@ -130,7 +139,7 @@ func createWorkerPool() error {
 				if !inet.IP.IsLoopback() {
 					ch := make(chan *ScanWork, 100)
 					chansByIface[iface.Name] = ch
-					for w := 1; w <= 5; w++ {
+					for w := 1; w <= workers; w++ {
 						var worker PcapWorker
 						err := worker.initializeWorker(&iface)
 						if err != nil {

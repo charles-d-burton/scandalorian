@@ -72,12 +72,12 @@ RUN cd /app && \
 
 
 
-FROM arm32v6:alpine as arm
+FROM arm32v6/alpine:latest as arm
 COPY --from=build-arm /app/scan-engine /go/bin/scan-engine
 COPY --from=build-arm /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT [ "/go/bin/scan-engine" ]
 
-FROM arm64v8:alpine as arm64
+FROM arm64v8/alpine:latest as arm64
 COPY --from=build-arm64 /app/scan-engine /go/bin/scan-engine
 COPY --from=build-arm64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT ["/go/bin/scan-engine"]

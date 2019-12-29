@@ -18,10 +18,8 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=arm-linux --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -o scan-engine . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -ldflags '-w -extldflags "-static"' -o scan-engine . && \
     file scan-engine
-
-#CGO_LDFLAGS="-L./libpcap-$PCAPV -s -w"
 
 FROM golang:latest as build-arm64
 RUN apt update && apt install -y \
@@ -43,10 +41,8 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=aarch64-unknown-linux-gnu --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -o scan-engine . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -ldflags '-w -extldflags "-static"' -o scan-engine . && \
     file scan-engine
-
-
 
 FROM golang:latest as build-amd64
 RUN apt update && apt install -y \
@@ -67,7 +63,7 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -o scan-engine . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -ldflags '-w -extldflags "-static"' -o scan-engine . && \
     file scan-engine
 
 

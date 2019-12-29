@@ -73,16 +73,16 @@ RUN cd /app && \
 
 
 FROM arm32v6/alpine:latest as arm
-COPY --from=build-arm /app/scan-engine /go/bin/scan-engine
-COPY --from=build-arm /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-ENTRYPOINT [ "/go/bin/scan-engine" ]
+COPY --from=build-arm /app/scan-engine scan-engine
+COPY --from=build-arm /app/libpcap-1.9.1/ libpcap-1.9.1/
+ENTRYPOINT [ "scan-engine" ]
 
 FROM arm64v8/alpine:latest as arm64
-COPY --from=build-arm64 /app/scan-engine /go/bin/scan-engine
-COPY --from=build-arm64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-ENTRYPOINT ["/go/bin/scan-engine"]
+COPY --from=build-arm64 /app/scan-engine scan-engine
+COPY --from=build-arm64 /app/libpcap-1.9.1/ libpcap-1.9.1/
+ENTRYPOINT ["scan-engine"]
 
 FROM alpine:latest as amd64
-COPY --from=build-amd64 /app/scan-engine /go/bin/scan-engine
-COPY --from=build-amd64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-ENTRYPOINT ["/go/bin/scan-engine"]
+COPY --from=build-amd64 /app/scan-engine scan-engine
+COPY --from=build-amd64 /app/libpcap-1.9.1/ libpcap-1.9.1/
+ENTRYPOINT ["scan-engine"]

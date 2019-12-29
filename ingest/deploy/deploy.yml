@@ -29,7 +29,7 @@ spec:
       - name: kanscan-ingest
         image: "charlesdburton/kanscan-ingest:latest"
         ports:
-        - containerPort: 7777
+        - containerPort: 9090
         imagePullPolicy: Always
         env:
         - name: INGEST_HOST

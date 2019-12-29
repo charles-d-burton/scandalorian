@@ -81,7 +81,7 @@ func main() {
 		log.Fatal("router error:", err)
 	}
 	//Initialize the worker channels by interface
-	err = createWorkerPool()
+	err = createWorkerPool(workers)
 	if err != nil {
 		log.Fatal(err)
 	}

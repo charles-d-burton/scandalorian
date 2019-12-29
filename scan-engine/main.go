@@ -130,7 +130,7 @@ func createWorkerPool() error {
 				if !inet.IP.IsLoopback() {
 					ch := make(chan *ScanWork, 100)
 					chansByIface[iface.Name] = ch
-					for w := 1; w <= 3; w++ {
+					for w := 1; w <= 5; w++ {
 						var worker PcapWorker
 						err := worker.initializeWorker(&iface)
 						if err != nil {
@@ -289,22 +289,22 @@ func (worker *PcapWorker) start(id int) error {
 		// Create the flow we expect returning packets to have, so we can check
 		// against it and discard useless packets.
 		ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
-		//start := time.Now()
-		for p := 1; p <= 65535; p++ {
+		start := time.Now()
+		for {
 			// Send one packet per loop iteration until we've sent packets
 			// to all of ports [1, 65535].
 			if tcp.DstPort < 65535 {
-				//start = time.Now()
+				start = time.Now()
 				tcp.DstPort++
 				if err := worker.send(&eth, &ip4, &tcp); err != nil {
 					log.Infof("error sending to port %v: %v", tcp.DstPort, err)
 				}
 			}
 			// Time out 5 seconds after the last packet we sent.
-			/* if time.Since(start) > time.Second*5 {
-				log.Infof("timed out for %v, assuming we've seen all we can", scw.Dst)
+			if time.Since(start) > time.Second*5 {
+				//log.Infof("timed out for %v, assuming we've seen all we can", scw.Dst)
 				break
-			} */
+			}
 
 			// Read in the next packet.
 			data, _, err := worker.Handle.ReadPacketData()

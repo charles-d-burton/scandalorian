@@ -136,7 +136,7 @@ func createWorkerPool() error {
 						if err != nil {
 							return err
 						}
-						go worker.start() //Start a single worker for now, revisit this later with better error handling
+						go worker.start(w) //Start a single worker for now, revisit this later with better error handling
 					}
 				}
 			}
@@ -250,17 +250,17 @@ func (worker *PcapWorker) getHwAddr(scw *ScanWork) (net.HardwareAddr, error) {
 	}
 }
 
-func (worker *PcapWorker) start() error {
+func (worker *PcapWorker) start(id int) error {
 	log.Infof("Starting PcapWorker for iface: %v", worker.Iface.Name)
 	rand.Seed(time.Now().UnixNano())
 	min := 10000
-	max := 65536
+	max := 65535
 	srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
 	log.Infof("Setting src port to: %d", srcPort)
 	for scw := range worker.Reqs {
 		//Scan the desired endpoint
 
-		log.Infof("Received scan Request on PcapWorker for Iface: %v", worker.Iface.Name)
+		log.Infof("Received scan Request on PcapWorker for Iface: %v on worker %d", worker.Iface.Name, id)
 		// First off, get the MAC address we should be sending packets to.
 		hwaddr, err := worker.getHwAddr(scw)
 		if err != nil {
@@ -336,7 +336,7 @@ func (worker *PcapWorker) start() error {
 			} else if tcp.RST {
 				//log.Printf("  port %v closed", tcp.SrcPort)
 			} else if tcp.SYN && tcp.ACK {
-				log.Infof("For host %v  port %v open", scw.Dst, tcp.SrcPort)
+				log.Infof("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id)
 			} else {
 				// log.Printf("ignoring useless packet")
 			}

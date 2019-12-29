@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kanscan-scan-engine
+spec:
+  ports:
+  - port: 80
+    targetPort: 9090
+  selector:
+    app: kanscan-scan-engine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kanscan-scan-engine
+spec:
+  selector:
+    matchLabels:
+      app: kanscan-scan-engine
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: kanscan-scan-engine
+    spec:
+      containers:
+      - name: kanscan-scan-engine
+        image: "charlesdburton/kanscan-scan-engine:latest"
+        ports:
+        - containerPort: 7777
+        imagePullPolicy: Always
+        env:
+        - name: ENGINE_HOST
+          value: "nats-cluster"
+        - name: ENGINE_PORT
+          value: "4222"

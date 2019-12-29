@@ -63,4 +63,62 @@ jobs:
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-ingest:latest
+  scan-engine-build-arm:
+    runs-on: ubuntu-latest
+    name: Build arm version of scan-engine
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm
+        working-directory: scan-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-scan-engine:arm --target=arm --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/kanscan-scan-engine:arm
+  scan-engine-build-arm64:
+    runs-on: ubuntu-latest
+    name: Build arm64 version of scan-engine
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm64
+        working-directory: scan-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-scan-engine:arm64 --target=arm64 --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/kanscan-scan-engine:arm64
+  scan-engine-build-amd64:
+    runs-on: ubuntu-latest
+    name: Build amd64 version of scan-engine
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build AMD64
+        working-directory: scan-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-scan-engine:amd64 --target=amd64 --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/kanscan-scan-engine:amd64
+  scan-engine-build-manifest:
+    runs-on: ubuntu-latest
+    name: Collect manifest and push scan-engine
+    needs: ["scan-engine-build-arm", "scan-engine-build-arm64", "scan-engine-build-amd64"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Manifest
+        run: |
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-scan-engine:latest \
+          charlesdburton/kanscan-scan-engine:amd64 \
+          charlesdburton/kanscan-scan-engine:arm \
+          charlesdburton/kanscan-scan-engine:arm64 
+      - name: Annotate Arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-scan-engine:arm
+      - name: Annotate Arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-scan-engine:arm64
+      - name: Annotate AMD64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-scan-engine:amd64
+      - name: Push Manifest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-scan-engine:latest
 

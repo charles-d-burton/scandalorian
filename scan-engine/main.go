@@ -42,7 +42,7 @@ var (
 type MessageBus interface {
 	Connect(host, port string) error
 	Publish(scan *shared.Scan) error
-	Subscribe(topic string) error
+	Subscribe(topic string) (chan []byte, error)
 	Close()
 }
 
@@ -62,7 +62,13 @@ func main() {
 		log.Fatal(err)
 	}
 	defer bus.Close()
-
+	dch, err := bus.Subscribe(dequeueTopic)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for data := range dch {
+		log.Println(string(data))
+	}
 	//TODO: REDO
 	defer util.Run()()
 	router, err := routing.New()

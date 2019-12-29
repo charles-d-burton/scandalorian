@@ -9,6 +9,8 @@ github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+Ce
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/charles-d-burton/gopacket v1.1.18-0.20191229030259-5f1bc83a588d h1:t05XJLD2vzNCOPDWF/wJv2hcZ2Y/2L6zpdnEOzaq9QQ=
 github.com/charles-d-burton/gopacket v1.1.18-0.20191229030259-5f1bc83a588d/go.mod h1:jYRRZEHoBnSt3FfjrjR39GjzusTCVx2ObqcWv4uxfFU=
+github.com/charles-d-burton/gopacket v1.1.18 h1:pTI2ICNqifGaEdEYIYB6wAooKTf0P4KMritbfJnrh7E=
+github.com/charles-d-burton/gopacket v1.1.18/go.mod h1:jYRRZEHoBnSt3FfjrjR39GjzusTCVx2ObqcWv4uxfFU=
 github.com/charles-d-burton/kanscan v0.0.0-20191229031359-7e6add468d1d h1:oxZxfEt8Dab1HWRMfrvCRnN0aQ2LnT09Zq6C/tcOX9s=
 github.com/charles-d-burton/kanscan v0.0.0-20191229031359-7e6add468d1d/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=

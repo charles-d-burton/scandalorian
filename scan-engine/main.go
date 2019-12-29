@@ -88,8 +88,7 @@ func main() {
 			continue
 		}
 		// Note:  newScanner creates and closes a pcap Handle once for
-		// every scan target.  We could do much better, were this not an
-		// example ;)
+		// every scan target.  We could do much better
 		s, err := newScanner(ip, router)
 		if err != nil {
 			log.Printf("unable to create scanner for %v: %v", ip, err)

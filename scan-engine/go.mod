@@ -3,7 +3,7 @@ module github.com/charles-d-burton/kanscan/scan-engine/v2
 go 1.13
 
 require (
-	github.com/charles-d-burton/gopacket v1.1.18-0.20191229030259-5f1bc83a588d
+	github.com/charles-d-burton/gopacket v1.1.18
 	github.com/charles-d-burton/kanscan v0.0.0-20191229031359-7e6add468d1d
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/nats-io/jwt v0.3.2 // indirect

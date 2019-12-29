@@ -18,7 +18,7 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=arm-linux --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=arm go build --ldflags "-L ./libpcap-$PCAPV -linkmode external -extldflags \"-static\"" -a -o scan-engine . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -o scan-engine . && \
     file scan-engine
 
 #CGO_LDFLAGS="-L./libpcap-$PCAPV -s -w"
@@ -43,7 +43,7 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --host=aarch64-unknown-linux-gnu --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build --ldflags "-L ./libpcap-$PCAPV -linkmode external -extldflags \"-static\"" -a -o scan-engine . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=arm64 CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -o scan-engine . && \
     file scan-engine
 
 
@@ -67,22 +67,22 @@ RUN wget http://www.tcpdump.org/release/libpcap-$PCAPV.tar.gz && \
     ./configure --with-pcap=linux && \
     make
 RUN cd /app && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build --ldflags "-L ./libpcap-$PCAPV -linkmode external -extldflags \"-static\"" -a -o scan-engine . && \
+    CGO_ENABLED=1 GOOS=linux GOARCH=amd64 CGO_LDFLAGS="-L/app/libpcap-$PCAPV" go build -a -o scan-engine . && \
     file scan-engine
 
 
 
-FROM scratch as arm
+FROM arm32v6:alpine as arm
 COPY --from=build-arm /app/scan-engine /go/bin/scan-engine
 COPY --from=build-arm /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT [ "/go/bin/scan-engine" ]
 
-FROM scratch as arm64
+FROM arm64v8:alpine as arm64
 COPY --from=build-arm64 /app/scan-engine /go/bin/scan-engine
 COPY --from=build-arm64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT ["/go/bin/scan-engine"]
 
-FROM scratch as amd64
+FROM alpine:latest as amd64
 COPY --from=build-amd64 /app/scan-engine /go/bin/scan-engine
 COPY --from=build-amd64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
 ENTRYPOINT ["/go/bin/scan-engine"]

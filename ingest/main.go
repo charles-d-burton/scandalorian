@@ -33,7 +33,7 @@ func main() {
 	v.SetEnvPrefix("ingest")
 	v.AutomaticEnv()
 	if !v.IsSet("port") || !v.IsSet("host") {
-		log.Fatal("Must set host and port for NATS server")
+		log.Fatal("Must set host and port for message bus")
 	}
 	if !v.IsSet("enqueue_topic") {
 		enqueueTopic = "ingest-enqueue"

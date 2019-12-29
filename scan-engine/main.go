@@ -268,8 +268,8 @@ func (worker *PcapWorker) start() error {
 			Protocol: layers.IPProtocolTCP,
 		}
 		tcp := layers.TCP{
-			SrcPort: srcPort, //TODO: implement logic to create random ports per worker
-			DstPort: 0,       // will be incremented during the scan
+			SrcPort: srcPort,
+			DstPort: 0, // will be incremented during the scan
 			SYN:     true,
 		}
 		tcp.SetNetworkLayerForChecksum(&ip4)
@@ -291,7 +291,7 @@ func (worker *PcapWorker) start() error {
 			// Time out 5 seconds after the last packet we sent.
 			if time.Since(start) > time.Second*5 {
 				log.Infof("timed out for %v, assuming we've seen all we can", scw.Dst)
-				continue
+				break
 			}
 
 			// Read in the next packet.
@@ -319,7 +319,7 @@ func (worker *PcapWorker) start() error {
 				// We panic here because this is guaranteed to never
 				// happen.
 				panic("tcp layer is not tcp layer :-/")
-			} else if tcp.DstPort != 54321 {
+			} else if tcp.DstPort != srcPort {
 				// log.Printf("dst port %v does not match", tcp.DstPort)
 			} else if tcp.RST {
 				//log.Printf("  port %v closed", tcp.SrcPort)

@@ -78,26 +78,30 @@ RUN wget https://github.com/kost/nmap-android/releases/download/v7.31/nmap-7.31-
 FROM arm32v6/alpine:latest as arm
 COPY --from=build-arm /app/scan-engine /go/bin/scan-engine
 COPY --from=build-arm /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-COPY --from=build-arm /app/ncat /bin/ncat
-COPY --from=build-arm /app/ndiff /bin/ndiff
-COPY --from=build-arm /app/nping /bin/nping
-COPY --from=build-arm /app/nmap /bin/nmap
-ENTRYPOINT [ "/go/bin/scan-engine" ]
+#COPY --from=build-arm /app/ncat /bin/ncat
+#COPY --from=build-arm /app/ndiff /bin/ndiff
+#COPY --from=build-arm /app/nping /bin/nping
+#COPY --from=build-arm /app/nmap /bin/nmap
+COPY ./scanner.sh .
+
+ENTRYPOINT [ "./scanner.sh" ]
 
 FROM arm64v8/alpine:latest as arm64
 COPY --from=build-arm64 /app/scan-engine /go/bin/scan-engine
 COPY --from=build-arm64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-COPY --from=build-arm64 /app/ncat /bin/ncat
-COPY --from=build-arm64 /app/ndiff /bin/ndiff
-COPY --from=build-arm64 /app/nping /bin/nping
-COPY --from=build-arm64 /app/nmap /bin/nmap
-ENTRYPOINT ["/go/bin/scan-engine"]
+#COPY --from=build-arm64 /app/ncat /bin/ncat
+#COPY --from=build-arm64 /app/ndiff /bin/ndiff
+#COPY --from=build-arm64 /app/nping /bin/nping
+#COPY --from=build-arm64 /app/nmap /bin/nmap
+COPY ./scanner.sh .
+ENTRYPOINT ["./scanner.sh"]
 
 FROM alpine:latest as amd64
 COPY --from=build-amd64 /app/scan-engine /go/bin/scan-engine
 COPY --from=build-amd64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-COPY --from=build-amd64 /app/ncat /bin/ncat
-COPY --from=build-amd64 /app/ndiff /bin/ndiff
-COPY --from=build-amd64 /app/nping /bin/nping
-COPY --from=build-amd64 /app/nmap /bin/nmap
-ENTRYPOINT ["/go/bin/scan-engine"]
+#COPY --from=build-amd64 /app/ncat /bin/ncat
+#COPY --from=build-amd64 /app/ndiff /bin/ndiff
+#COPY --from=build-amd64 /app/nping /bin/nping
+#COPY --from=build-amd64 /app/nmap /bin/nmap
+COPY ./scanner.sh .
+ENTRYPOINT ["./scanner.sh"]

@@ -301,10 +301,11 @@ func (worker *PcapWorker) start(id int) error {
 		// against it and discard useless packets.
 		ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
 		start := time.Now()
+		var port = 0
 		for {
 			// Send one packet per loop iteration until we've sent packets
 			// to all of ports [1, 65535].
-			var port = 0
+
 			if tcp.DstPort < 65535 {
 				start = time.Now()
 				tcp.DstPort++

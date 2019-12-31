@@ -362,6 +362,7 @@ func (worker *PcapWorker) start(id int) error {
 			nmap.WithTargets(scw.Dst.String()),
 			nmap.WithPorts(scw.Scan.Request.Ports...),
 			nmap.WithServiceInfo(),
+			nmap.WithScripts("./.nmap/vulners.nse"),
 			nmap.WithTimingTemplate(nmap.TimingAggressive),
 			// Filter out hosts that don't have any open ports
 			nmap.WithFilterHost(func(h nmap.Host) bool {
@@ -383,14 +384,14 @@ func (worker *PcapWorker) start(id int) error {
 		if err != nil {
 			log.Fatalf("nmap scan failed: %v", err)
 		}
-
-		for _, host := range result.Hosts {
+		log.Info(result)
+		/*for _, host := range result.Hosts {
 			log.Infof("Host %s\n", host.Addresses[0])
 
 			for _, port := range host.Ports {
 				log.Infof("\tPort %d open service\n", port.ID)
 			}
-		}
+		}*/
 		log.Info("Vulnerability scan complete")
 
 	}

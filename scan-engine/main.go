@@ -380,11 +380,16 @@ func (worker *PcapWorker) start(id int) error {
 			log.Fatalf("unable to create nmap scanner: %v", err)
 		}
 
-		result, _, err := scanner.Run()
+		result, warns, err := scanner.Run()
 		if err != nil {
 			log.Fatalf("nmap scan failed: %v", err)
 		}
-		log.Info(result)
+		if warns != nil && len(warns) > 0 {
+			for _, warn := range warns {
+				log.Infof("Warning: %v", warn)
+			}
+		}
+		log.Info(result.ScanInfo.Services)
 		/*for _, host := range result.Hosts {
 			log.Infof("Host %s\n", host.Addresses[0])
 

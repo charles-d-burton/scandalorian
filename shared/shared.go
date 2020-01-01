@@ -9,6 +9,7 @@ const (
 	Nmap
 )
 
+//TODO: These need rethought a bit
 //ScanRequest object instructing system on how to scan.
 type ScanRequest struct {
 	ID      string   `json:"id,omitempty"`

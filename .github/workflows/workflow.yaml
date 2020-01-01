@@ -121,4 +121,62 @@ jobs:
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-scan-engine:latest
+  discovery-engine-build-arm:
+    runs-on: ubuntu-latest
+    name: Build arm version of discovery-engine
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm
+        working-directory: discovery-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-discovery-engine:arm --target=arm --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/kanscan-discovery-engine:arm
+  discovery-engine-build-arm64:
+    runs-on: ubuntu-latest
+    name: Build arm64 version of discovery-engine
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm64
+        working-directory: discovery-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-discovery-engine:arm64 --target=arm64 --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/kanscan-discovery-engine:arm64
+  discovery-engine-build-amd64:
+    runs-on: ubuntu-latest
+    name: Build amd64 version of discovery-engine
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build AMD64
+        working-directory: discovery-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-discovery-engine:amd64 --target=amd64 --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/kanscan-discovery-engine:amd64
+  discovery-engine-build-manifest:
+    runs-on: ubuntu-latest
+    name: Collect manifest and push scan-engine
+    needs: ["discovery-engine-build-arm", "discovery-engine-build-arm64", "discovery-engine-build-amd64"]
+    steps:
+      - uses: actions/checkout@v1
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Manifest
+        run: |
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-discovery-engine:latest \
+          charlesdburton/kanscan-discovery-engine:amd64 \
+          charlesdburton/kanscan-discovery-engine:arm \
+          charlesdburton/kanscan-discovery-engine:arm64 
+      - name: Annotate Arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-discovery-engine:latest charlesdburton/kanscan-discovery-engine:arm
+      - name: Annotate Arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-discovery-engine:latest charlesdburton/kanscan-discovery-engine:arm64
+      - name: Annotate AMD64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-discovery-engine:latest charlesdburton/kanscan-discovery-engine:amd64
+      - name: Push Manifest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-discovery-engine:latest
 

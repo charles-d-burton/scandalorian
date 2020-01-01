@@ -36,7 +36,7 @@ func main() {
 		log.Fatal("Must set host and port for message bus")
 	}
 	if !v.IsSet("enqueue_topic") {
-		enqueueTopic = "ingest-enqueue"
+		enqueueTopic = "scan-discovery-queue"
 	}
 	bus, err := connectBus(v)
 	if err != nil {

@@ -196,7 +196,8 @@ func Hosts(cidr string) ([]string, error) {
 	log.Infof("End of Range: %d\n", lastOctet(ipE))
 	ips := make([]string, 0)
 	for w := lastOctet(ipS); w <= lastOctet(ipE); w++ {
-		ips = append(ips, uInt32ToIPv4(w))
+		ips = append(ips, uInt32ToIPv4(ipS))
+		ipS = ipS + 1
 	}
 	return ips, nil
 }

@@ -357,51 +357,51 @@ func (worker *PcapWorker) start(id int) error {
 				// log.Printf("ignoring useless packet")
 			}
 		}
-		log.Infof("port scan complete, starting vulnerability scan on ports: %v", scw.Scan.Request.Ports)
+		if len(scw.Scan.Request.Ports) > 0 {
+			log.Infof("port scan complete, starting vulnerability scan on ports: %v", scw.Scan.Request.Ports)
 
-		//pdef = strings.Join(scw.Scan.Request.Ports, ",")
-
-		scanner, err := nmap.NewScanner(
-			nmap.WithTargets(scw.Dst.String()),
-			nmap.WithPorts(scw.Scan.Request.Ports...),
-			nmap.WithServiceInfo(),
-			nmap.WithScripts("./.nmap/vulners.nse"),
-			nmap.WithTimingTemplate(nmap.TimingAggressive),
-			// Filter out hosts that don't have any open ports
-			nmap.WithFilterHost(func(h nmap.Host) bool {
-				// Filter out hosts with no open ports.
-				for idx := range h.Ports {
-					if h.Ports[idx].Status() == "open" {
-						return true
+			//pdef = strings.Join(scw.Scan.Request.Ports, ",")
+			scanner, err := nmap.NewScanner(
+				nmap.WithTargets(scw.Dst.String()),
+				nmap.WithPorts(scw.Scan.Request.Ports...),
+				nmap.WithServiceInfo(),
+				nmap.WithScripts("./.nmap/vulners.nse"),
+				nmap.WithTimingTemplate(nmap.TimingAggressive),
+				// Filter out hosts that don't have any open ports
+				nmap.WithFilterHost(func(h nmap.Host) bool {
+					// Filter out hosts with no open ports.
+					for idx := range h.Ports {
+						if h.Ports[idx].Status() == "open" {
+							return true
+						}
 					}
+
+					return false
+				}),
+			)
+			if err != nil {
+				log.Fatalf("unable to create nmap scanner: %v", err)
+			}
+
+			result, warns, err := scanner.Run()
+			if err != nil {
+				log.Fatalf("nmap scan failed: %v", err)
+			}
+			if warns != nil && len(warns) > 0 {
+				for _, warn := range warns {
+					log.Infof("Warning: %v", warn)
 				}
-
-				return false
-			}),
-		)
-		if err != nil {
-			log.Fatalf("unable to create nmap scanner: %v", err)
-		}
-
-		result, warns, err := scanner.Run()
-		if err != nil {
-			log.Fatalf("nmap scan failed: %v", err)
-		}
-		if warns != nil && len(warns) > 0 {
-			for _, warn := range warns {
-				log.Infof("Warning: %v", warn)
 			}
+			log.Info(result.ScanInfo.Services)
+			/*for _, host := range result.Hosts {
+				log.Infof("Host %s\n", host.Addresses[0])
+
+				for _, port := range host.Ports {
+					log.Infof("\tPort %d open service\n", port.ID)
+				}
+			}*/
+			log.Info("Vulnerability scan complete")
 		}
-		log.Info(result.ScanInfo.Services)
-		/*for _, host := range result.Hosts {
-			log.Infof("Host %s\n", host.Addresses[0])
-
-			for _, port := range host.Ports {
-				log.Infof("\tPort %d open service\n", port.ID)
-			}
-		}*/
-		log.Info("Vulnerability scan complete")
-
 	}
 	return nil
 }

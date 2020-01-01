@@ -1,31 +1,31 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kanscan-scan-engine
+  name: kanscan-discovery-engine
 spec:
   ports:
   - port: 80
     targetPort: 9090
   selector:
-    app: kanscan-scan-engine
+    app: kanscan-discovery-engine
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kanscan-scan-engine
+  name: kanscan-discovery-engine
 spec:
   selector:
     matchLabels:
-      app: kanscan-scan-engine
+      app: kanscan-discovery-engine
   replicas: 1
   template:
     metadata:
       labels:
-        app: kanscan-scan-engine
+        app: kanscan-discovery-engine
     spec:
       containers:
-      - name: kanscan-scan-engine
-        image: "charlesdburton/kanscan-scan-engine:latest"
+      - name: kanscan-discovery-engine
+        image: "charlesdburton/kanscan-discovery-engine:latest"
         ports:
         - containerPort: 9090
         imagePullPolicy: Always

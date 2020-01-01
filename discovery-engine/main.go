@@ -380,7 +380,10 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	}
 	if len(scw.Scan.Request.Ports) > 0 {
 		log.Info("Found open ports on host, publishing to bus")
-		bus.Publish(enqueueTopic, scw.Scan)
+		err := bus.Publish(enqueueTopic, scw.Scan)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 	return nil
 }

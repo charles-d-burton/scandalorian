@@ -67,7 +67,7 @@ func main() {
 		var scan shared.Scan
 		err := json.Unmarshal(data, &scan)
 		if err != nil {
-			log.Warn(err)
+			log.Error(err)
 			continue
 		}
 		workQueue <- &scan //publish work

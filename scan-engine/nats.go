@@ -49,6 +49,7 @@ func (natsConn *NatsConn) Subscribe(topic string) (chan []byte, error) {
 	bch := make(chan []byte, 64)
 	go func() {
 		for msg := range ch {
+			log.Infof("Received message from topic: %v", topic)
 			bch <- msg.Data
 		}
 	}() //Handle byte conversion to satisyf interface

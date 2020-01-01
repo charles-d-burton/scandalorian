@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"strings"
@@ -396,7 +397,7 @@ func (worker *PcapWorker) start(id int) error {
 				}
 			}
 			//log.Info(result.ScanInfo.Services)
-			for _, host := range result.Hosts {
+			/*for _, host := range result.Hosts {
 				logs = append(logs, fmt.Sprintf("Host %s", host.Addresses[0]))
 				for _, port := range host.Ports {
 					logs = append(logs, fmt.Sprintf("Port %d open service", port.ID))
@@ -404,8 +405,11 @@ func (worker *PcapWorker) start(id int) error {
 				logs = append(logs, fmt.Sprintf("OS: %v", host.OS.Fingerprints))
 				logs = append(logs, fmt.Sprintf("Comment: %v", host.Comment))
 			}
-			log.Info("Vulnerability scan complete")
+			log.Info("Vulnerability scan complete")*/
 			log.Info(logs)
+			reader := result.ToReader()
+			data, err := ioutil.ReadAll(reader)
+			log.Info(string(data))
 		}
 	}
 	return nil

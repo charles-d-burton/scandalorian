@@ -392,14 +392,15 @@ func (worker *PcapWorker) start(id int) error {
 					log.Infof("Warning: %v", warn)
 				}
 			}
-			log.Info(result.ScanInfo.Services)
-			/*for _, host := range result.Hosts {
-				log.Infof("Host %s\n", host.Addresses[0])
-
+			//log.Info(result.ScanInfo.Services)
+			for _, host := range result.Hosts {
+				log.Infof("Host %s", host.Addresses[0])
 				for _, port := range host.Ports {
-					log.Infof("\tPort %d open service\n", port.ID)
+					log.Infof("\tPort %d open service", port.ID)
 				}
-			}*/
+				log.Infof("OS: %v", host.OS.Fingerprints)
+				log.Infof("Comment: %v", host.Comment)
+			}
 			log.Info("Vulnerability scan complete")
 		}
 	}

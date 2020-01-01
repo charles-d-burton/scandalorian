@@ -5,7 +5,7 @@ import (
 	"errors"
 	"math/rand"
 	"net"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Ullaakut/nmap"
@@ -350,8 +350,9 @@ func (worker *PcapWorker) start(id int) error {
 			} else if tcp.RST {
 				//log.Printf("  port %v closed", tcp.SrcPort)
 			} else if tcp.SYN && tcp.ACK {
-				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
+				//scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
 				log.Infof("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id)
+				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0]))
 			} else {
 				// log.Printf("ignoring useless packet")
 			}

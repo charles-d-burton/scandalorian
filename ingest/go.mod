@@ -3,6 +3,7 @@ module github.com/charles-d-burton/kanscan/ingest/v2
 go 1.13
 
 require (
+	github.com/Ullaakut/nmap v2.0.0+incompatible // indirect
 	github.com/charles-d-burton/kanscan v0.0.0-20191228235618-14962d2c95ab
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect

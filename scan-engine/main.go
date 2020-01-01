@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 	"net"
 	"strings"
@@ -270,8 +271,9 @@ func (worker *PcapWorker) start(id int) error {
 	log.Infof("Setting src port to: %d", srcPort)
 	for scw := range worker.Reqs {
 		//Scan the desired endpoint
+		logs := make([]string, 0)
 		scw.Scan.Request.Ports = make([]string, 0)
-		log.Infof("Received scan Request on PcapWorker for Iface: %v on worker %d", worker.Iface.Name, id)
+		logs = append(logs, fmt.Sprintf("Received scan Request on PcapWorker for Iface: %v on worker %d", worker.Iface.Name, id))
 		// First off, get the MAC address we should be sending packets to.
 		hwaddr, err := worker.getHwAddr(scw)
 		if err != nil {
@@ -311,7 +313,7 @@ func (worker *PcapWorker) start(id int) error {
 				tcp.DstPort++
 				port++
 				if err := worker.send(&eth, &ip4, &tcp); err != nil {
-					log.Infof("error sending to port %v: %v", tcp.DstPort, err)
+					logs = append(logs, fmt.Sprintf("error sending to port %v: %v", tcp.DstPort, err))
 				}
 			}
 			// Time out 5 seconds after the last packet we sent.
@@ -326,6 +328,7 @@ func (worker *PcapWorker) start(id int) error {
 				continue
 			} else if err != nil {
 				log.Infof("error reading packet: %v", err)
+				logs = append(logs, fmt.Sprintf("error reading packet: %v", err))
 				continue
 			}
 
@@ -351,14 +354,14 @@ func (worker *PcapWorker) start(id int) error {
 				//log.Printf("  port %v closed", tcp.SrcPort)
 			} else if tcp.SYN && tcp.ACK {
 				//scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
-				log.Infof("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id)
-				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0]))
+				logs = append(logs, fmt.Sprintf("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id))
+				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0])) //Get just the port number
 			} else {
 				// log.Printf("ignoring useless packet")
 			}
 		}
 		if len(scw.Scan.Request.Ports) > 0 {
-			log.Infof("port scan complete, starting vulnerability scan on ports: %v", scw.Scan.Request.Ports)
+			logs = append(logs, fmt.Sprintf("port scan complete, starting vulnerability scan on ports: %v", scw.Scan.Request.Ports))
 
 			//pdef = strings.Join(scw.Scan.Request.Ports, ",")
 			scanner, err := nmap.NewScanner(
@@ -394,14 +397,15 @@ func (worker *PcapWorker) start(id int) error {
 			}
 			//log.Info(result.ScanInfo.Services)
 			for _, host := range result.Hosts {
-				log.Infof("Host %s", host.Addresses[0])
+				logs = append(logs, fmt.Sprintf("Host %s", host.Addresses[0]))
 				for _, port := range host.Ports {
-					log.Infof("\tPort %d open service", port.ID)
+					logs = append(logs, fmt.Sprintf("Port %d open service", port.ID))
 				}
-				log.Infof("OS: %v", host.OS.Fingerprints)
-				log.Infof("Comment: %v", host.Comment)
+				logs = append(logs, fmt.Sprintf("OS: %v", host.OS.Fingerprints))
+				logs = append(logs, fmt.Sprintf("Comment: %v", host.Comment))
 			}
 			log.Info("Vulnerability scan complete")
+			log.Info(logs)
 		}
 	}
 	return nil

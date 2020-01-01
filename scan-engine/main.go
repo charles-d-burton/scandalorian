@@ -409,7 +409,7 @@ func (worker *PcapWorker) start(id int) error {
 			log.Info(logs)
 			reader := result.ToReader()
 			data, err := ioutil.ReadAll(reader)
-			log.Info(string(data))
+			fmt.Println(string(data))
 		}
 	}
 	return nil

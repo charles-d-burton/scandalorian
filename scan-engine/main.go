@@ -2,20 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
-	"net"
-	"strings"
-	"time"
 
 	"github.com/Ullaakut/nmap"
-	"github.com/charles-d-burton/gopacket"
-	"github.com/charles-d-burton/gopacket/examples/util"
-	"github.com/charles-d-burton/gopacket/layers"
-	"github.com/charles-d-burton/gopacket/pcap"
-	"github.com/charles-d-burton/gopacket/routing"
 	"github.com/charles-d-burton/kanscan/shared"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -24,7 +14,7 @@ import (
 var (
 	workers      int
 	dequeueTopic string
-	chansByIface = make(map[string]chan *ScanWork)
+	workQueue    = make(chan *shared.Scan, 10)
 )
 
 //MessageBus Interface for making generic connections to message busses
@@ -35,23 +25,8 @@ type MessageBus interface {
 	Close()
 }
 
-//ScanWork holds the info necessary to run a scan
-type ScanWork struct {
-	Scan *shared.Scan
-	GW   net.IP
-	Src  net.IP
-	Dst  net.IP
-}
-
-//PcapWorker Object to run scans
-type PcapWorker struct {
-	Handle *pcap.Handle   //initialized once so we can reuse it
-	Iface  *net.Interface //The iface the worker is bound to
-	Reqs   chan *ScanWork //The work queue
-	// opts and buf allow us to easily serialize packets in the send()
-	// method.
-	opts gopacket.SerializeOptions
-	buf  gopacket.SerializeBuffer
+//NMAPWorker Object to run scans
+type NMAPWorker struct {
 }
 
 func main() {
@@ -63,7 +38,7 @@ func main() {
 		log.Fatal("Must set host and port for message bus")
 	}
 	if !v.IsSet("dequeue_topic") {
-		dequeueTopic = "ingest-enqueue"
+		dequeueTopic = "scan-engine-queue"
 	}
 	if !v.IsSet("workers") {
 		workers = 5
@@ -78,12 +53,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer bus.Close()
-	defer util.Run()
-	router, err := routing.New()
-	if err != nil {
-		//log.Fatal("routing error:", err)
-		log.Fatal("router error:", err)
-	}
 	//Initialize the worker channels by interface
 	err = createWorkerPool(workers)
 	if err != nil {
@@ -101,59 +70,15 @@ func main() {
 			log.Warn(err)
 			continue
 		}
-		var ip net.IP
-		if ip = net.ParseIP(scan.IP); ip == nil {
-			log.Printf("non-ip target: %q", scan.IP)
-			continue
-		} else if ip = ip.To4(); ip == nil {
-			log.Printf("non-ipv4 target: %q", scan.IP)
-			continue
-		}
-		iface, gw, src, err := router.Route(ip) //Get the route
-		if err != nil {
-			log.Info(err)
-		}
-		scWork := &ScanWork{ //Create full SYN Scan work Object
-			GW:   gw,
-			Src:  src,
-			Scan: &scan,
-			Dst:  ip,
-		}
-		i, ok := chansByIface[iface.Name] //Get the right work queue by iface
-		if !ok {
-			log.Errorf("Interface not found: %v", iface.Name)
-		}
-		i <- scWork //Drop the wrok in the queue
+		workQueue <- &scan //publish work
 	}
 }
 
 //createWorkerPool generates the worker queues and the workers to process them
 func createWorkerPool(workers int) error {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return err
-	}
-	for _, iface := range ifaces {
-		addrs, err := iface.Addrs()
-		if err != nil {
-			return err
-		}
-		for _, addr := range addrs {
-			if inet, ok := addr.(*net.IPNet); ok { //Make sure we ignore loopback
-				if !inet.IP.IsLoopback() {
-					ch := make(chan *ScanWork, 100)
-					chansByIface[iface.Name] = ch
-					for w := 1; w <= workers; w++ {
-						var worker PcapWorker
-						err := worker.initializeWorker(&iface)
-						if err != nil {
-							return err
-						}
-						go worker.start(w)
-					}
-				}
-			}
-		}
+	for w := 1; w <= workers; w++ {
+		var worker NMAPWorker
+		worker.start(w)
 	}
 	return nil
 }
@@ -191,183 +116,15 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 	return bus, nil
 }
 
-//initializeWorker Sets the Pcap values, creates a pcap Handler for the worker thread.
-func (worker *PcapWorker) initializeWorker(iface *net.Interface) error {
-	log.Infof("Initalizing a PcapWorker for iface: %v", iface.Name)
-	worker.opts = gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
-	worker.buf = gopacket.NewSerializeBuffer()
-	worker.Iface = iface
-	worker.Reqs = chansByIface[iface.Name]
-	handle, err := pcap.OpenLive(iface.Name, 65535, true, pcap.BlockForever)
-	if err != nil {
-		return err
-	}
-	worker.Handle = handle
-	log.Infof("PcapWorker Initialized for iface: %v", iface.Name)
-	return nil
-}
-
-// getHwAddr is a hacky but effective way to get the destination hardware
-// address for our packets.  It does an ARP request for our gateway (if there is
-// one) or destination IP (if no gateway is necessary), then waits for an ARP
-// reply.  This is pretty slow right now, since it blocks on the ARP
-// request/reply.
-func (worker *PcapWorker) getHwAddr(scw *ScanWork) (net.HardwareAddr, error) {
-	start := time.Now()
-	arpDst := scw.Dst
-	if scw.GW != nil {
-		arpDst = scw.GW
-	}
-	// Prepare the layers to send for an ARP request.
-	eth := layers.Ethernet{
-		SrcMAC:       worker.Iface.HardwareAddr,
-		DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
-		EthernetType: layers.EthernetTypeARP,
-	}
-	arp := layers.ARP{
-		AddrType:          layers.LinkTypeEthernet,
-		Protocol:          layers.EthernetTypeIPv4,
-		HwAddressSize:     6,
-		ProtAddressSize:   4,
-		Operation:         layers.ARPRequest,
-		SourceHwAddress:   []byte(worker.Iface.HardwareAddr),
-		SourceProtAddress: []byte(scw.Src),
-		DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
-		DstProtAddress:    []byte(arpDst),
-	}
-	// Send a single ARP request packet (we never retry a send (maybe we should?)
-	if err := worker.send(&eth, &arp); err != nil {
-		return nil, err
-	}
-	// Wait 3 seconds for an ARP reply.
-	for {
-		if time.Since(start) > time.Second*3 {
-			return nil, errors.New("timeout getting ARP reply")
-		}
-		data, _, err := worker.Handle.ReadPacketData()
-		if err == pcap.NextErrorTimeoutExpired {
-			continue
-		} else if err != nil {
-			return nil, err
-		}
-		packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
-		if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
-			arp := arpLayer.(*layers.ARP)
-			if net.IP(arp.SourceProtAddress).Equal(net.IP(arpDst)) {
-				return net.HardwareAddr(arp.SourceHwAddress), nil
-			}
-		}
-	}
-}
-
-func (worker *PcapWorker) start(id int) error {
-	log.Infof("Starting PcapWorker for iface: %v", worker.Iface.Name)
-	rand.Seed(time.Now().UnixNano())
-	min := 10000
-	max := 65535
-	srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
-	log.Infof("Setting src port to: %d", srcPort)
-	for scw := range worker.Reqs {
-		//Scan the desired endpoint
-		logs := make([]string, 0)
-		scw.Scan.Request.Ports = make([]string, 0)
-		logs = append(logs, fmt.Sprintf("Received scan Request on PcapWorker for Iface: %v on worker %d", worker.Iface.Name, id))
-		// First off, get the MAC address we should be sending packets to.
-		hwaddr, err := worker.getHwAddr(scw)
-		if err != nil {
-			return err
-		}
-		// Construct all the network layers we need.
-		eth := layers.Ethernet{
-			SrcMAC:       worker.Iface.HardwareAddr,
-			DstMAC:       hwaddr,
-			EthernetType: layers.EthernetTypeIPv4,
-		}
-		ip4 := layers.IPv4{
-			SrcIP:    scw.Src,
-			DstIP:    scw.Dst,
-			Version:  4,
-			TTL:      64,
-			Protocol: layers.IPProtocolTCP,
-		}
-		tcp := layers.TCP{
-			SrcPort: srcPort,
-			DstPort: 0, // will be incremented during the scan
-			SYN:     true,
-		}
-		tcp.SetNetworkLayerForChecksum(&ip4)
-
-		// Create the flow we expect returning packets to have, so we can check
-		// against it and discard useless packets.
-		ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
-		start := time.Now()
-		var port = 0
-		for {
-			// Send one packet per loop iteration until we've sent packets
-			// to all of ports [1, 65535].
-
-			if tcp.DstPort < 65535 {
-				start = time.Now()
-				tcp.DstPort++
-				port++
-				if err := worker.send(&eth, &ip4, &tcp); err != nil {
-					logs = append(logs, fmt.Sprintf("error sending to port %v: %v", tcp.DstPort, err))
-				}
-			}
-			// Time out 5 seconds after the last packet we sent.
-			if time.Since(start) > time.Second*5 {
-				//log.Infof("timed out for %v, assuming we've seen all we can", scw.Dst)
-				break
-			}
-
-			// Read in the next packet.
-			data, _, err := worker.Handle.ReadPacketData()
-			if err == pcap.NextErrorTimeoutExpired {
-				continue
-			} else if err != nil {
-				log.Infof("error reading packet: %v", err)
-				logs = append(logs, fmt.Sprintf("error reading packet: %v", err))
-				continue
-			}
-
-			// Parse the packet.  We'd use DecodingLayerParser here if we
-			// wanted to be really fast.
-			packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
-
-			// Find the packets we care about, and print out logging
-			// information about them.  All others are ignored.
-			if net := packet.NetworkLayer(); net == nil {
-				// log.Printf("packet has no network layer")
-			} else if net.NetworkFlow() != ipFlow {
-				// log.Printf("packet does not match our ip src/dst")
-			} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
-				// log.Printf("packet has not tcp layer")
-			} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
-				// We panic here because this is guaranteed to never
-				// happen.
-				panic("tcp layer is not tcp layer :-/")
-			} else if tcp.DstPort != srcPort {
-				// log.Printf("dst port %v does not match", tcp.DstPort)
-			} else if tcp.RST {
-				//log.Printf("  port %v closed", tcp.SrcPort)
-			} else if tcp.SYN && tcp.ACK {
-				//scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
-				logs = append(logs, fmt.Sprintf("For host %v  port %v open by worker %d", scw.Dst, tcp.SrcPort, id))
-				scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0])) //Get just the port number
-			} else {
-				// log.Printf("ignoring useless packet")
-			}
-		}
-		if len(scw.Scan.Request.Ports) > 0 {
-			logs = append(logs, fmt.Sprintf("port scan complete, starting vulnerability scan on ports: %v", scw.Scan.Request.Ports))
-
+func (worker *NMAPWorker) start(id int) error {
+	log.Infof("Starting NMAP Worker %d", id)
+	for scan := range workQueue {
+		if len(scan.Request.Ports) > 0 {
+			log.Infof("Scanning ports for host %v with nmap", scan.Request.Host)
 			//pdef = strings.Join(scw.Scan.Request.Ports, ",")
 			scanner, err := nmap.NewScanner(
-				nmap.WithTargets(scw.Dst.String()),
-				nmap.WithPorts(scw.Scan.Request.Ports...),
+				nmap.WithTargets(scan.Request.Host),
+				nmap.WithPorts(scan.Request.Ports...),
 				nmap.WithServiceInfo(),
 				nmap.WithScripts("./.nmap/vulners.nse"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
@@ -396,29 +153,10 @@ func (worker *PcapWorker) start(id int) error {
 					log.Infof("Warning: %v", warn)
 				}
 			}
-			//log.Info(result.ScanInfo.Services)
-			/*for _, host := range result.Hosts {
-				logs = append(logs, fmt.Sprintf("Host %s", host.Addresses[0]))
-				for _, port := range host.Ports {
-					logs = append(logs, fmt.Sprintf("Port %d open service", port.ID))
-				}
-				logs = append(logs, fmt.Sprintf("OS: %v", host.OS.Fingerprints))
-				logs = append(logs, fmt.Sprintf("Comment: %v", host.Comment))
-			}
-			log.Info("Vulnerability scan complete")*/
-			log.Info(logs)
 			reader := result.ToReader()
 			data, err := ioutil.ReadAll(reader)
 			fmt.Println(string(data))
 		}
 	}
 	return nil
-}
-
-// send sends the given layers as a single packet on the network.
-func (worker *PcapWorker) send(l ...gopacket.SerializableLayer) error {
-	if err := gopacket.SerializeLayers(worker.buf, worker.opts, l...); err != nil {
-		return err
-	}
-	return worker.Handle.WritePacketData(worker.buf.Bytes())
 }

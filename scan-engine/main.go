@@ -78,7 +78,7 @@ func main() {
 func createWorkerPool(workers int) error {
 	for w := 1; w <= workers; w++ {
 		var worker NMAPWorker
-		worker.start(w)
+		go worker.start(w)
 	}
 	return nil
 }

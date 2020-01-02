@@ -120,10 +120,10 @@ func (worker *NMAPWorker) start(id int) error {
 	log.Infof("Starting NMAP Worker %d", id)
 	for scan := range workQueue {
 		if len(scan.Request.Ports) > 0 {
-			log.Infof("Scanning ports for host %v with nmap", scan.Request.Host)
+			log.Infof("Scanning ports for host %v with nmap", scan.IP)
 			//pdef = strings.Join(scw.Scan.Request.Ports, ",")
 			scanner, err := nmap.NewScanner(
-				nmap.WithTargets(scan.Request.Host),
+				nmap.WithTargets(scan.IP),
 				nmap.WithPorts(scan.Request.Ports...),
 				nmap.WithServiceInfo(),
 				nmap.WithScripts("./.nmap/vulners.nse"),

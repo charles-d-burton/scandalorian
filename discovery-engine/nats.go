@@ -29,7 +29,7 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 
 //Publish push messages to NATS
 func (natsConn *NatsConn) Publish(topic string, scan *shared.Scan) error {
-	log.Info("Publishing scan: ", scan)
+	log.Infof("Publishing scan: %v to topic: %v", scan, topic)
 	data, err := json.Marshal(scan)
 	if err != nil {
 		return err

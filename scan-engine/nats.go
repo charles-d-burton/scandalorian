@@ -40,14 +40,15 @@ func (natsConn *NatsConn) Publish(scan *shared.Scan) error {
 
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
 func (natsConn *NatsConn) Subscribe(topic string) (chan []byte, error) {
-	ch := make(chan *nats.Msg, 64)
+	ch := make(chan *nats.Msg, 10)
 	sub, err := natsConn.Conn.ChanSubscribe(dequeueTopic, ch)
 	if err != nil {
 		return nil, err
 	}
 	natsConn.Sub = sub
-	bch := make(chan []byte, 64)
+	bch := make(chan []byte, 10)
 	go func() {
+		log.Infof("Subscribing to topic: %v", topic)
 		for msg := range ch {
 			log.Infof("Received message from topic: %v", topic)
 			bch <- msg.Data

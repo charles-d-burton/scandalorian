@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/Ullaakut/nmap v2.0.0+incompatible
 	github.com/charles-d-burton/gopacket v1.1.18
-	github.com/charles-d-burton/kanscan v0.0.0-20191229031359-7e6add468d1d
+	github.com/charles-d-burton/kanscan v0.0.0-20200104022507-281aaa599142
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/nats-io/jwt v0.3.2 // indirect
 	github.com/nats-io/nats.go v1.9.1

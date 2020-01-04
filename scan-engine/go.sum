@@ -15,6 +15,8 @@ github.com/charles-d-burton/gopacket v1.1.18 h1:pTI2ICNqifGaEdEYIYB6wAooKTf0P4KM
 github.com/charles-d-burton/gopacket v1.1.18/go.mod h1:jYRRZEHoBnSt3FfjrjR39GjzusTCVx2ObqcWv4uxfFU=
 github.com/charles-d-burton/kanscan v0.0.0-20191229031359-7e6add468d1d h1:oxZxfEt8Dab1HWRMfrvCRnN0aQ2LnT09Zq6C/tcOX9s=
 github.com/charles-d-burton/kanscan v0.0.0-20191229031359-7e6add468d1d/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
+github.com/charles-d-burton/kanscan v0.0.0-20200104022507-281aaa599142 h1:on+0+7kuzc6GdefDnM3tjQt00eFzsojBzkQKOffnrhg=
+github.com/charles-d-burton/kanscan v0.0.0-20200104022507-281aaa599142/go.mod h1:9kwFWrH0EDMIAP42sFihtoBZAkE8IPwvv8y8xmr3NbA=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=

@@ -295,13 +295,14 @@ func (worker *PcapWorker) send(l ...gopacket.SerializableLayer) error {
 
 func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	//Scan the desired endpoint
-	scw.Scan.Request.Ports = make([]string, 0)
+	scw.Scan.Ports = make([]string, 0)
 	log.Infof("Received scan Request on PcapWorker for Iface: %v", pWorker.Iface.Name)
 	// First off, get the MAC address we should be sending packets to.
 	hwaddr, err := pWorker.getHwAddr(scw)
 	if err != nil {
 		return err
 	}
+
 	// Construct all the network layers we need.
 	eth := layers.Ethernet{
 		SrcMAC:       pWorker.Iface.HardwareAddr,
@@ -375,12 +376,12 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 		} else if tcp.SYN && tcp.ACK {
 			//scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
 			log.Infof("For host %v  port %v open", scw.Dst, tcp.SrcPort)
-			scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0])) //Get just the port number
+			scw.Scan.Ports = append(scw.Scan.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0])) //Get just the port number
 		} else {
 			// log.Printf("ignoring useless packet")
 		}
 	}
-	if len(scw.Scan.Request.Ports) > 0 {
+	if len(scw.Scan.Ports) > 0 {
 		log.Infof("Found open ports on host, publishing to topic: %v", enqueueTopic)
 		err := bus.Publish(enqueueTopic, scw.Scan)
 		if err != nil {

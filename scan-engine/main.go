@@ -119,12 +119,12 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 func (worker *NMAPWorker) start(id int) error {
 	log.Infof("Starting NMAP Worker %d", id)
 	for scan := range workQueue {
-		if len(scan.Request.Ports) > 0 {
+		if len(scan.Ports) > 0 {
 			log.Infof("Scanning ports for host %v with nmap", scan.IP)
 			//pdef = strings.Join(scw.Scan.Request.Ports, ",")
 			scanner, err := nmap.NewScanner(
 				nmap.WithTargets(scan.IP),
-				nmap.WithPorts(scan.Request.Ports...),
+				nmap.WithPorts(scan.Ports...),
 				nmap.WithServiceInfo(),
 				nmap.WithScripts("./.nmap/vulners.nse"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),

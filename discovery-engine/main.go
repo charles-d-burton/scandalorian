@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"math/rand"
@@ -16,6 +17,7 @@ import (
 	"github.com/charles-d-burton/kanscan/shared"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/time/rate"
 )
 
 var (
@@ -302,7 +304,6 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	if err != nil {
 		return err
 	}
-
 	// Construct all the network layers we need.
 	eth := layers.Ethernet{
 		SrcMAC:       pWorker.Iface.HardwareAddr,
@@ -327,15 +328,25 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	// against it and discard useless packets.
 	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
 	start := time.Now()
+	var limiter *rate.Limiter
+	limited := false
+	if scw.Scan.Request.PPS > 0 {
+		limiter = rate.NewLimiter(rate.Limit(scw.Scan.Request.PPS), 10)
+		limited = true
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	for {
 		// Send one packet per loop iteration until we've sent packets
 		// to all of ports [1, 65535].
-
+		if limited {
+			limiter.Wait(ctx) //Wait for the rate limit
+		}
 		if tcp.DstPort < 65535 {
 			start = time.Now()
 			tcp.DstPort++
 			if err := pWorker.send(&eth, &ip4, &tcp); err != nil {
-				//logs = append(logs, fmt.Sprintf("error sending to port %v: %v", tcp.DstPort, err))
+				log.Errorf("error sending to port %v: %v", tcp.DstPort, err)
 			}
 		}
 		// Time out 5 seconds after the last packet we sent.

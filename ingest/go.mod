@@ -3,9 +3,7 @@ module github.com/charles-d-burton/kanscan/ingest/v2
 go 1.13
 
 require (
-	github.com/Ullaakut/nmap v2.0.0+incompatible // indirect
-	github.com/charles-d-burton/gopacket v1.1.18 // indirect
-	github.com/charles-d-burton/kanscan v0.0.0-20191228235618-14962d2c95ab
+	github.com/charles-d-burton/kanscan v0.0.0-20200104032133-12dc06993deb
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/google/uuid v1.1.1
@@ -25,7 +23,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.1
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876 // indirect
-	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8 // indirect
+	golang.org/x/sys v0.0.0-20200103143344-a1369afcdac7 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/ini.v1 v1.51.1 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect

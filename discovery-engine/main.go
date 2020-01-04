@@ -58,6 +58,7 @@ type PcapWorker struct {
 
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.DebugLevel)
 	v := viper.New()
 	v.SetEnvPrefix("engine")
 	v.AutomaticEnv()
@@ -284,7 +285,7 @@ func (worker *PcapWorker) start(id int) error {
 	for scw := range worker.Reqs {
 		err := scw.scan(worker)
 		if err != nil {
-			log.Info(err)
+			log.Error(err)
 		}
 	}
 	return nil

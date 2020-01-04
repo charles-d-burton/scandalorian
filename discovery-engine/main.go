@@ -340,8 +340,9 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 		limiter = rate.NewLimiter(rate.Every(time.Duration(scw.Scan.Request.PPS)*time.Second), 1)
 		limited = true
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx := context.Background()
+	defer ctx.Done()
 	for {
 		// Use the limiter if the desired packet per second is defined
 		if limited {

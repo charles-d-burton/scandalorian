@@ -337,11 +337,13 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	for {
-		// Send one packet per loop iteration until we've sent packets
-		// to all of ports [1, 65535].
+		// Use the limiter if the desired packet per second is defined
 		if limited {
+			log.Debug("limited by rate limiter on %v", tcp.DstPort)
 			limiter.Wait(ctx) //Wait for the rate limit
 		}
+		// Send one packet per loop iteration until we've sent packets
+		// to all of ports [1, 65535].
 		if tcp.DstPort < 65535 {
 			start = time.Now()
 			tcp.DstPort++

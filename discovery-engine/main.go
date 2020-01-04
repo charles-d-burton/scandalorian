@@ -340,17 +340,22 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 		limiter = rate.NewLimiter(rate.Every(time.Second/time.Duration(scw.Scan.Request.PPS)), 1)
 		limited = true
 	}
-	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	ctx := context.Background()
-	defer ctx.Done()
+	//
+	//ctx := context.Background()
+	//defer ctx.Done()
 	for {
 		// Use the limiter if the desired packet per second is defined
+
 		if limited {
 			log.Debugf("rate limited on port: %v", tcp.DstPort)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			err := limiter.Wait(ctx) //Wait for the rate limit
 			if err != nil {
 				log.Debug(err)
+				cancel()
+				continue
 			}
+			cancel()
 		}
 		// Send one packet per loop iteration until we've sent packets
 		// to all of ports [1, 65535].

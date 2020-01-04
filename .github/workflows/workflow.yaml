@@ -159,7 +159,7 @@ jobs:
         run: docker push charlesdburton/kanscan-discovery-engine:amd64
   discovery-engine-build-manifest:
     runs-on: ubuntu-latest
-    name: Collect manifest and push scan-engine
+    name: Collect manifest and push discovery-engine
     needs: ["discovery-engine-build-arm", "discovery-engine-build-arm64", "discovery-engine-build-amd64"]
     steps:
       - uses: actions/checkout@v1

@@ -212,11 +212,12 @@ func (worker *PcapWorker) initializeWorker(iface *net.Interface) error {
 	if err != nil {
 		return err
 	}
-	filter := "tcp[tcpflags] & (tcp-syn|tcp-fin) != 0 and not src"
+	//TODO: Understand BPF better to get this to work
+	/*filter := "tcp[tcpflags] & (tcp-syn|tcp-fin) != 0 and not src"
 	err = handle.SetBPFFilter(filter)
 	if err != nil {
 		return err
-	}
+	}*/
 	worker.Handle = handle
 	log.Infof("PcapWorker Initialized for iface: %v", iface.Name)
 	return nil

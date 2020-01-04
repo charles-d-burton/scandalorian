@@ -337,7 +337,7 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	limited := false
 	log.Debugf("rate limit set to: %d", scw.Scan.Request.PPS)
 	if scw.Scan.Request.PPS > 0 {
-		limiter = rate.NewLimiter(rate.Every(time.Duration(scw.Scan.Request.PPS)*time.Second), 1)
+		limiter = rate.NewLimiter(rate.Every(time.Second/time.Duration(scw.Scan.Request.PPS)), 1)
 		limited = true
 	}
 	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

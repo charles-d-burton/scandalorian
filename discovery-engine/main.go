@@ -330,8 +330,8 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	start := time.Now()
 	var limiter *rate.Limiter
 	limited := false
+	log.Debugf("rate limit set to: %d", scw.Scan.Request.PPS)
 	if scw.Scan.Request.PPS > 0 {
-		log.Debugf("rate limit set to: %d", scw.Scan.Request.PPS)
 		limiter = rate.NewLimiter(rate.Limit(scw.Scan.Request.PPS), 10)
 		limited = true
 	}

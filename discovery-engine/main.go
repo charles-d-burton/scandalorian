@@ -58,7 +58,6 @@ type PcapWorker struct {
 
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
-	log.SetLevel(log.DebugLevel)
 	v := viper.New()
 	v.SetEnvPrefix("engine")
 	v.AutomaticEnv()
@@ -77,6 +76,15 @@ func main() {
 		workers = v.GetInt("workers")
 		if workers < 1 {
 			workers = 5
+		}
+	}
+	if !v.IsSet("log_level") {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		_, err := log.ParseLevel(v.GetString("log_level"))
+		if err != nil {
+			log.SetLevel(log.InfoLevel)
+			log.Warn(err)
 		}
 	}
 	nbus, err := connectBus(v)

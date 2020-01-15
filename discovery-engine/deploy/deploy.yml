@@ -34,3 +34,5 @@ spec:
           value: "nats-cluster"
         - name: ENGINE_PORT
           value: "4222"
+        - name: LOG_LEVEL
+          value: "info"

@@ -1,1 +1,1 @@
-<id>{id}</id><product>{product}</product><version>{version}</version>
+vulscanoutput='<id>{id}</id><product>{product}</product><version>{version}</version>'

@@ -155,8 +155,8 @@ func (worker *NMAPWorker) start(id int) error {
 					log.Infof("Warning: %v", warn)
 				}
 			}
+			fmt.Println("\n\n")
 			reader := result.ToReader()
-			//data, err := ioutil.ReadAll(reader)
 			data, err := xj.Convert(reader)
 			json := strings.ReplaceAll(data.String(), "\"-", "\"")
 			json = strings.ReplaceAll(json, "\\n", ",")
@@ -164,6 +164,7 @@ func (worker *NMAPWorker) start(id int) error {
 			json = strings.ReplaceAll(json, ":,", "=")
 
 			fmt.Println(json)
+			fmt.Println("\n\n")
 		}
 	}
 	return nil

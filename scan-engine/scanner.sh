@@ -2,10 +2,9 @@
 # Sadly this is necessary as it's difficult to use ARM/ARM64 with CI systems currently
 apk add --no-cache nmap nmap-scripts git
 
-mkdir .nmap
+#git clone https://github.com/vulnersCom/nmap-vulners .nmap
 
-git clone https://github.com/vulnersCom/nmap-vulners .nmap
-
-nmap --datadir .nmap --script-updatedb
+#nmap -d --datadir .nmap --script-updatedb
+git clone https://github.com/scipag/vulscan scipag_vulscan
 
 /go/bin/scan-engine

@@ -127,7 +127,8 @@ func (worker *NMAPWorker) start(id int) error {
 				nmap.WithTargets(scan.IP),
 				nmap.WithPorts(scan.Ports...),
 				nmap.WithServiceInfo(),
-				nmap.WithScripts("./.nmap/vulners.nse"),
+				nmap.WithDebugging(1),
+				nmap.WithScripts("vulscan/vulscan.nse"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
 				// Filter out hosts that don't have any open ports
 				nmap.WithFilterHost(func(h nmap.Host) bool {

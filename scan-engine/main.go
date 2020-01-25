@@ -16,6 +16,7 @@ var (
 	workers      int
 	dequeueTopic string
 	workQueue    = make(chan *shared.Scan, 10)
+	args         = make(map[string]string)
 )
 
 //MessageBus Interface for making generic connections to message busses
@@ -49,6 +50,7 @@ func main() {
 			workers = 5
 		}
 	}
+	args["vulscanoutput"] = "<id>{id}</id><product>{product}</product><version>{version}</version>"
 	bus, err := connectBus(v)
 	if err != nil {
 		log.Fatal(err)
@@ -129,6 +131,7 @@ func (worker *NMAPWorker) start(id int) error {
 				nmap.WithServiceInfo(),
 				nmap.WithDebugging(1),
 				nmap.WithScripts("./scipag_vulscan/vulscan.nse"),
+				nmap.WithScriptArguments(args),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
 				// Filter out hosts that don't have any open ports
 				nmap.WithFilterHost(func(h nmap.Host) bool {

@@ -50,7 +50,7 @@ func main() {
 			workers = 5
 		}
 	}
-	args["vulscanoutput"] = "<id>{id}</id><product>{product}</product><version>{version}</version>"
+	args["vulscanoutput"] = "'<id>{id}</id><product>{product}</product><version>{version}</version>'"
 	bus, err := connectBus(v)
 	if err != nil {
 		log.Fatal(err)
@@ -148,7 +148,6 @@ func (worker *NMAPWorker) start(id int) error {
 			if err != nil {
 				log.Fatalf("unable to create nmap scanner: %v", err)
 			}
-
 			result, warns, err := scanner.Run()
 			if err != nil {
 				log.Fatalf("nmap scan failed: %v", err)

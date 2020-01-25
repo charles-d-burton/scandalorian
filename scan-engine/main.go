@@ -132,7 +132,7 @@ func (worker *NMAPWorker) start(id int) error {
 				nmap.WithServiceInfo(),
 				nmap.WithDebugging(1),
 				nmap.WithScripts("./scipag_vulscan/vulscan.nse"),
-				nmap.WithScriptArgumentsFile("./args.txt"),
+				nmap.WithScriptArgumentsFile("/go/bin/args.txt"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
 				// Filter out hosts that don't have any open ports
 				nmap.WithFilterHost(func(h nmap.Host) bool {

@@ -25,7 +25,7 @@ RUN GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o s
 FROM arm32v6/alpine:latest as arm
 COPY --from=build-arm /app/scan-engine /go/bin/scan-engine
 COPY ./scanner.sh .
-COPY ./args.txt .
+COPY ./args.txt /go/bin/args.txt
 ENTRYPOINT [ "./scanner.sh" ]
 
 FROM arm64v8/alpine:latest as arm64
@@ -35,7 +35,7 @@ COPY --from=build-arm64 /app/scan-engine /go/bin/scan-engine
 #COPY --from=build-arm64 /app/nping /bin/nping
 #COPY --from=build-arm64 /app/nmap /bin/nmap
 COPY ./scanner.sh .
-COPY ./args.txt .
+COPY ./args.txt /go/bin/args.txt
 ENTRYPOINT ["./scanner.sh"]
 
 FROM alpine:latest as amd64
@@ -45,5 +45,5 @@ COPY --from=build-amd64 /app/scan-engine /go/bin/scan-engine
 #COPY --from=build-amd64 /app/nping /bin/nping
 #COPY --from=build-amd64 /app/nmap /bin/nmap
 COPY ./scanner.sh .
-COPY ./args.txt .
+COPY ./args.txt /go/bin/args.txt
 ENTRYPOINT ["./scanner.sh"]

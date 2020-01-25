@@ -159,7 +159,7 @@ func (worker *NMAPWorker) start(id int) error {
 			//data, err := ioutil.ReadAll(reader)
 			data, err := xj.Convert(reader)
 			json := strings.ReplaceAll(data.String(), "\"-", "\"")
-			json = strings.ReplaceAll(json, "\n", ",")
+			json = strings.ReplaceAll(json, "\\n", ",")
 			fmt.Println(json)
 		}
 	}

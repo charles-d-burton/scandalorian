@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/Ullaakut/nmap"
+	xj "github.com/basgys/goxml2json"
 	"github.com/charles-d-burton/kanscan/shared"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -154,8 +154,9 @@ func (worker *NMAPWorker) start(id int) error {
 				}
 			}
 			reader := result.ToReader()
-			data, err := ioutil.ReadAll(reader)
-			fmt.Println(string(data))
+			//data, err := ioutil.ReadAll(reader)
+			data, err := xj.Convert(reader)
+			fmt.Println(data.String())
 		}
 	}
 	return nil

@@ -26,7 +26,6 @@ FROM arm32v6/alpine:latest as arm
 COPY --from=build-arm /app/scan-engine /go/bin/scan-engine
 COPY ./scanner.sh .
 COPY ./args.txt .
-
 ENTRYPOINT [ "./scanner.sh" ]
 
 FROM arm64v8/alpine:latest as arm64

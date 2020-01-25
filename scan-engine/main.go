@@ -50,7 +50,7 @@ func main() {
 			workers = 5
 		}
 	}
-	args["vulscanoutput"] = "'\\<id\\>{id}\\</id\\>\\<product\\>{product}\\</product\\>\\<version\\>{version}\\</version\\>'"
+	args["vulscanoutput"] = "'{id} | {product} | {version}'"
 	bus, err := connectBus(v)
 	if err != nil {
 		log.Fatal(err)

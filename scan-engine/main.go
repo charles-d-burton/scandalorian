@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/Ullaakut/nmap"
 	xj "github.com/basgys/goxml2json"
@@ -156,7 +157,8 @@ func (worker *NMAPWorker) start(id int) error {
 			reader := result.ToReader()
 			//data, err := ioutil.ReadAll(reader)
 			data, err := xj.Convert(reader)
-			fmt.Println(data.String())
+			json := strings.ReplaceAll(data.String(), "\"-", "\"")
+			fmt.Println(json)
 		}
 	}
 	return nil

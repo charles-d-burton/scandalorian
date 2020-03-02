@@ -1,13 +1,15 @@
 package main
 
 import (
-	"encoding/json"
+	"bufio"
+	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/Ullaakut/nmap"
 	xj "github.com/basgys/goxml2json"
 	"github.com/charles-d-burton/kanscan/shared"
+	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -16,6 +18,7 @@ var (
 	workers      int
 	dequeueTopic string
 	workQueue    = make(chan *shared.Scan, 10)
+	json         = jsoniter.ConfigCompatibleWithStandardLibrary
 	//args         = make(map[string]string)
 )
 
@@ -158,16 +161,25 @@ func (worker *NMAPWorker) start(id int) error {
 					log.Infof("Warning: %v", warn)
 				}
 			}
-			fmt.Println("\n\n")
+			fmt.Println("")
+			fmt.Println("")
 			reader := result.ToReader()
 			data, err := xj.Convert(reader)
-			json := strings.ReplaceAll(data.String(), "\"-", "\"")
-			json = strings.ReplaceAll(json, "\\n", ",")
-			json = strings.ReplaceAll(json, ",,", ",")
-			json = strings.ReplaceAll(json, ":,", "=")
+			jsonStr := strings.ReplaceAll(data.String(), "\"-", "\"")
+			jsonStr = strings.ReplaceAll(jsonStr, "\\n", ",")
+			jsonStr = strings.ReplaceAll(jsonStr, ",,", ",")
+			jsonStr = strings.ReplaceAll(jsonStr, ":,", "=")
+			var buf bytes.Buffer
+			out := bufio.NewWriter(&buf)
+			enc := json.NewEncoder(out)
+			enc.SetIndent("", "  ")
+			if err := enc.Encode(jsonStr); err != nil {
+				log.Errorf("Error: %v", err)
+			}
 
-			fmt.Println(json)
-			fmt.Println("\n\n")
+			fmt.Println(buf.String())
+			fmt.Println("")
+			fmt.Println("")
 		}
 	}
 	return nil

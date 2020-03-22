@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 
 	"github.com/Ullaakut/nmap"
@@ -132,7 +130,6 @@ func (worker *NMAPWorker) start(id int) error {
 				nmap.WithTargets(scan.IP),
 				nmap.WithPorts(scan.Ports...),
 				nmap.WithServiceInfo(),
-				nmap.WithDebugging(1),
 				nmap.WithOSDetection(),
 				nmap.WithScripts("./scipag_vulscan/vulscan.nse"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
@@ -164,15 +161,8 @@ func (worker *NMAPWorker) start(id int) error {
 			fmt.Println("")
 			reader := result.ToReader()
 			data, err := xj.Convert(reader)
-			var buf bytes.Buffer
-			out := bufio.NewWriter(&buf)
-			enc := json.NewEncoder(out)
-			enc.SetIndent("", "  ")
-			if err := enc.Encode(data); err != nil {
-				log.Errorf("Error: %v", err)
-			}
 
-			fmt.Println(buf.String())
+			fmt.Println(string(data.Bytes()))
 			fmt.Println("")
 			fmt.Println("")
 		}

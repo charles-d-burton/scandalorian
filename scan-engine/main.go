@@ -133,8 +133,8 @@ func (worker *NMAPWorker) start(id int) error {
 				nmap.WithPorts(scan.Ports...),
 				nmap.WithServiceInfo(),
 				nmap.WithDebugging(1),
+				nmap.WithOSDetection(),
 				nmap.WithScripts("./scipag_vulscan/vulscan.nse"),
-				//nmap.WithScriptArgumentsFile("/go/bin/args.txt"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
 				// Filter out hosts that don't have any open ports
 				nmap.WithFilterHost(func(h nmap.Host) bool {
@@ -164,10 +164,6 @@ func (worker *NMAPWorker) start(id int) error {
 			fmt.Println("")
 			reader := result.ToReader()
 			data, err := xj.Convert(reader)
-			//jsonStr := strings.ReplaceAll(data.String(), "\"-", "\"")
-			//jsonStr = strings.ReplaceAll(jsonStr, "\\n", ",")
-			//jsonStr = strings.ReplaceAll(jsonStr, ",,", ",")
-			//jsonStr = strings.ReplaceAll(jsonStr, ":,", "=")
 			var buf bytes.Buffer
 			out := bufio.NewWriter(&buf)
 			enc := json.NewEncoder(out)

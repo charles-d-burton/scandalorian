@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"strings"
 
 	"github.com/Ullaakut/nmap"
 	xj "github.com/basgys/goxml2json"
@@ -135,7 +134,7 @@ func (worker *NMAPWorker) start(id int) error {
 				nmap.WithServiceInfo(),
 				nmap.WithDebugging(1),
 				nmap.WithScripts("./scipag_vulscan/vulscan.nse"),
-				nmap.WithScriptArgumentsFile("/go/bin/args.txt"),
+				//nmap.WithScriptArgumentsFile("/go/bin/args.txt"),
 				nmap.WithTimingTemplate(nmap.TimingAggressive),
 				// Filter out hosts that don't have any open ports
 				nmap.WithFilterHost(func(h nmap.Host) bool {
@@ -165,15 +164,15 @@ func (worker *NMAPWorker) start(id int) error {
 			fmt.Println("")
 			reader := result.ToReader()
 			data, err := xj.Convert(reader)
-			jsonStr := strings.ReplaceAll(data.String(), "\"-", "\"")
-			jsonStr = strings.ReplaceAll(jsonStr, "\\n", ",")
-			jsonStr = strings.ReplaceAll(jsonStr, ",,", ",")
-			jsonStr = strings.ReplaceAll(jsonStr, ":,", "=")
+			//jsonStr := strings.ReplaceAll(data.String(), "\"-", "\"")
+			//jsonStr = strings.ReplaceAll(jsonStr, "\\n", ",")
+			//jsonStr = strings.ReplaceAll(jsonStr, ",,", ",")
+			//jsonStr = strings.ReplaceAll(jsonStr, ":,", "=")
 			var buf bytes.Buffer
 			out := bufio.NewWriter(&buf)
 			enc := json.NewEncoder(out)
 			enc.SetIndent("", "  ")
-			if err := enc.Encode(jsonStr); err != nil {
+			if err := enc.Encode(data); err != nil {
 				log.Errorf("Error: %v", err)
 			}
 

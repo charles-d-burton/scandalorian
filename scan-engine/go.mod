@@ -7,6 +7,7 @@ require (
 	github.com/basgys/goxml2json v1.1.0
 	github.com/charles-d-burton/gopacket v1.1.18
 	github.com/charles-d-burton/kanscan v0.0.0-20200104022507-281aaa599142
+	github.com/json-iterator/go v1.1.9
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/nats-io/jwt v0.3.2 // indirect
 	github.com/nats-io/nats.go v1.9.1

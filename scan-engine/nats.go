@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-
 	"github.com/charles-d-burton/kanscan/shared"
-
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )

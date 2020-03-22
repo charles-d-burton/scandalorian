@@ -221,7 +221,7 @@ func (worker *PcapWorker) initializeWorker(iface *net.Interface) error {
 		return err
 	}
 	//TODO: Understand BPF better to get this to work
-	filter := "tcp-syn != 0 and not src"
+	filter := "tcp[tcpflags] == tcp-syn or tcp[tcpflags] == tcp-ack and not src"
 	err = handle.SetBPFFilter(filter)
 	if err != nil {
 		return err

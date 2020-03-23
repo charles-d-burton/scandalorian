@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/Ullaakut/nmap"
@@ -160,9 +161,13 @@ func (worker *NMAPWorker) start(id int) error {
 			fmt.Println("")
 			fmt.Println("")
 			reader := result.ToReader()
-			data, err := xj.Convert(reader)
+			buf, err := xj.Convert(reader)
+			if err != nil {
+				log.Errorf("Problem converting nmap output: %v", err)
+			}
+			data := bytes.ReplaceAll(buf.Bytes(), []byte("\"-"), []byte("\""))
 
-			fmt.Println(string(data.Bytes()))
+			fmt.Println(string(data))
 			fmt.Println("")
 			fmt.Println("")
 		}

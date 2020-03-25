@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/Ullaakut/nmap"
-	xj "github.com/basgys/goxml2json"
 	"github.com/charles-d-burton/kanscan/shared"
 	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
@@ -160,16 +158,31 @@ func (worker *NMAPWorker) start(id int) error {
 			}
 			fmt.Println("")
 			fmt.Println("")
+			data, err := json.Marshal(&result)
+			if err != nil {
+				log.Errorf("Error marshalling result: %v", err)
+			}
+			fmt.Println(string(data))
+			fmt.Println("")
+			/*fmt.Println("")
+			fmt.Println("")
 			reader := result.ToReader()
+			fmt.Println("")
+			fmt.Println("")
+			fmt.Println(r
 			buf, err := xj.Convert(reader)
 			if err != nil {
 				log.Errorf("Problem converting nmap output: %v", err)
 			}
 			data := bytes.ReplaceAll(buf.Bytes(), []byte("\"-"), []byte("\""))
-
+			var NmapResult nmapresult
+			err := json.Marshal(data, &nmapresult)
+			if err != nil {
+				log.Errorf("Unable to marshal results: %v", err)
+			}
 			fmt.Println(string(data))
 			fmt.Println("")
-			fmt.Println("")
+			fmt.Println("")*/
 		}
 	}
 	return nil

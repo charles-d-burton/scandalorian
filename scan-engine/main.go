@@ -164,25 +164,6 @@ func (worker *NMAPWorker) start(id int) error {
 			}
 			fmt.Println(string(data))
 			fmt.Println("")
-			/*fmt.Println("")
-			fmt.Println("")
-			reader := result.ToReader()
-			fmt.Println("")
-			fmt.Println("")
-			fmt.Println(r
-			buf, err := xj.Convert(reader)
-			if err != nil {
-				log.Errorf("Problem converting nmap output: %v", err)
-			}
-			data := bytes.ReplaceAll(buf.Bytes(), []byte("\"-"), []byte("\""))
-			var NmapResult nmapresult
-			err := json.Marshal(data, &nmapresult)
-			if err != nil {
-				log.Errorf("Unable to marshal results: %v", err)
-			}
-			fmt.Println(string(data))
-			fmt.Println("")
-			fmt.Println("")*/
 		}
 	}
 	return nil

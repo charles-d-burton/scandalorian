@@ -1,4 +1,4 @@
-# Scanadlorian
+# Scandalorian
 Distributed NMAP vulnerability scanner and CVE matcher
 
 ## Description

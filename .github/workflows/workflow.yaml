@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build arm version of ingest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build arm64 version of ingest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build amd64 version of ingest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
@@ -48,7 +48,7 @@ jobs:
     name: Collect manifest and push
     needs: ["ingest-build-arm", "ingest-build-arm64", "ingest-build-amd64"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
@@ -62,14 +62,14 @@ jobs:
       - name: Annotate Arm64
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-ingest:${{ github.sha }} charlesdburton/scandalorian-ingest:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:${{ github.sha }}st charlesdburton/scandalorian-ingest:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:${{ github.sha }} charlesdburton/scandalorian-ingest:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-ingest:${{ github.sha }}
   scan-engine-build-arm:
     runs-on: ubuntu-latest
     name: Build arm version of scan-engine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build arm64 version of scan-engine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build amd64 version of scan-engine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
@@ -106,7 +106,7 @@ jobs:
     name: Collect manifest and push scan-engine
     needs: ["scan-engine-build-arm", "scan-engine-build-arm64", "scan-engine-build-amd64"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build arm version of discovery-engine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build arm64 version of discovery-engine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
@@ -151,7 +151,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build amd64 version of discovery-engine
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
@@ -164,7 +164,7 @@ jobs:
     name: Collect manifest and push discovery-engine
     needs: ["discovery-engine-build-arm", "discovery-engine-build-arm64", "discovery-engine-build-amd64"]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest

@@ -7,4 +7,4 @@ resources:
 images:
 - name: charlesdburton/scandalorian-ingest:latest
   newName: charlesdburton/scandalorian-ingest
-  newTag: othersha
+  newTag: 6b3f10e07d0f23bbcf32b68705c928fd0521449d

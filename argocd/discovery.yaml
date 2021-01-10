@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: scandalorian-ingest
+  name: scandalorian-discovery
   namespace: scandalorian
 spec:
   progressDeadlineSeconds: 600
@@ -9,7 +9,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: scandalorian-ingest
+      app: scandalorian-discovery
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -18,17 +18,17 @@ spec:
   template:
     metadata:
       labels:
-        app: scandalorian-ingest
+        app: scandalorian-discovery
     spec:
       containers:
-      - image: charlesdburton/scandalorian-ingest:latest
+      - image: charlesdburton/scandalorian-discovery-engine:latest
         imagePullPolicy: Always
         env:
-        - name: INGEST_HOST
+        - name: ENGINE_HOST
           value: "nats-cluster.default.svc"
-        - name: INGEST_PORT
+        - name: ENGINE_PORT
           value: "4222"
-        name: scandalorian-ingest
+        name: scandalorian-discovery
         resources:
           requests:
             memory: "128Mi"
@@ -38,18 +38,18 @@ spec:
             cpu: "500m"
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: scandalorian-ingest
-  namespace: scandalorian
-  labels:
-    run: scandalorian-ingest
-spec:
-  ports:
-  - port: 80
-    targetPort: 9090
-  type: LoadBalancer
-  selector:
-    run: scandalorian-ingest
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: scandalorian-discovery
+#  namespace: scandalorian
+#  labels:
+#    run: scandalorian-discovery
+#spec:
+#  ports:
+#  - port: 80
+#    targetPort: 9090
+#  type: LoadBalancer
+#  selector:
+#    run: scandalorian-discovery

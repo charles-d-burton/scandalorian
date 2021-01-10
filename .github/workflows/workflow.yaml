@@ -49,11 +49,6 @@ jobs:
     needs: ["ingest-build-arm", "ingest-build-arm64", "ingest-build-amd64"]
     steps:
       - uses: actions/checkout@v2
-
-      - name: Setup Kustomize
-        uses: imranismail/setup-kustomize@v1
-        with:
-          kustomize-version: "3.9.1"
           
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
@@ -71,13 +66,7 @@ jobs:
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:${{ github.sha }} charlesdburton/scandalorian-ingest:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-ingest:${{ github.sha }}
-      
-      - name: Edit Kustomize
-        run: |
-          cd argocd
-          kustomize edit set image charlesdburton/scandalorian-ingest:latest=charlesdburton/scandalorian-ingest:${{ github.sha }}
-          cat kustomization.yaml
-
+        
   scan-engine-build-arm:
     runs-on: ubuntu-latest
     name: Build arm version of scan-engine
@@ -107,11 +96,6 @@ jobs:
     name: Build amd64 version of scan-engine
     steps:
       - uses: actions/checkout@v2
-
-      - name: Setup Kustomize
-        uses: imranismail/setup-kustomize@v1
-        with:
-          kustomize-version: "3.9.1"
           
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
@@ -142,12 +126,6 @@ jobs:
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-scan-engine:${{ github.sha }} charlesdburton/scandalorian-scan-engine:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-scan-engine:${{ github.sha }}
-      
-      - name: Edit Kustomize
-        run: |
-          cd argocd
-          kustomize edit set image charlesdburton/scandalorian-scan-engine:latest=charlesdburton/scandalorian-scan-engine:${{ github.sha }}
-          cat kustomization.yaml
 
   discovery-engine-build-arm:
     runs-on: ubuntu-latest
@@ -192,11 +170,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup Kustomize
-        uses: imranismail/setup-kustomize@v1
-        with:
-          kustomize-version: "3.9.1"
-
       - name: Docker Login
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
@@ -212,13 +185,7 @@ jobs:
       - name: Annotate AMD64
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-discovery-engine:${{ github.sha }} charlesdburton/scandalorian-discovery-engine:amd64
       - name: Push Manifest
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-discovery-engine:${{ github.sha }}
-
-      - name: Edit Kustomize
-        run: |
-          cd argocd
-          kustomize edit set image charlesdburton/scandalorian-discovery-engine:latest=charlesdburton/scandalorian-discovery-engine:${{ github.sha }}
-          cat kustomization.yaml
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-discovery-engine:${{ github.sha }}      
 
   deploy:
     name: Deploy
@@ -230,7 +197,20 @@ jobs:
         with:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
-      
+
+      - name: Setup Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.9.1"
+
+      - name: Edit Kustomize
+        run: |
+          cd argocd
+          kustomize edit set image charlesdburton/scandalorian-discovery-engine:latest=charlesdburton/scandalorian-discovery-engine:${{ github.sha }}
+          kustomize edit set image charlesdburton/scandalorian-scan-engine:latest=charlesdburton/scandalorian-scan-engine:${{ github.sha }}
+          kustomize edit set image charlesdburton/scandalorian-ingest:latest=charlesdburton/scandalorian-ingest:${{ github.sha }}
+          cat kustomization.yaml
+
       - name: Commit Files
         run: |
           git config --local user.email "action@github.com"

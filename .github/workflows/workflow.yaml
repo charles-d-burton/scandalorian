@@ -58,11 +58,11 @@ jobs:
           charlesdburton/scandalorian-ingest:arm \
           charlesdburton/scandalorian-ingest:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-ingest:latest charlesdburton/scandalorian-ingest:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-ingest:${{ github.sha }} charlesdburton/scandalorian-ingest:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-ingest:latest charlesdburton/scandalorian-ingest:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-ingest:${{ github.sha }} charlesdburton/scandalorian-ingest:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:latest charlesdburton/scandalorian-ingest:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:late${{ github.sha }}st charlesdburton/scandalorian-ingest:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-ingest:${{ github.sha }}
   scan-engine-build-arm:
@@ -116,11 +116,11 @@ jobs:
           charlesdburton/scandalorian-scan-engine:arm \
           charlesdburton/scandalorian-scan-engine:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-scan-engine:latest charlesdburton/scandalorian-scan-engine:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-scan-engine:${{ github.sha }} charlesdburton/scandalorian-scan-engine:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-scan-engine:latest charlesdburton/scandalorian-scan-engine:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-scan-engine:${{ github.sha }} charlesdburton/scandalorian-scan-engine:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-scan-engine:latest charlesdburton/scandalorian-scan-engine:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-scan-engine:${{ github.sha }} charlesdburton/scandalorian-scan-engine:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-scan-engine:${{ github.sha }}
   discovery-engine-build-arm:
@@ -174,11 +174,11 @@ jobs:
           charlesdburton/scandalorian-discovery-engine:arm \
           charlesdburton/scandalorian-discovery-engine:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-discovery-engine:latest charlesdburton/scandalorian-discovery-engine:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-discovery-engine:${{ github.sha }} charlesdburton/scandalorian-discovery-engine:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-discovery-engine:latest charlesdburton/scandalorian-discovery-engine:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-discovery-engine:${{ github.sha }} charlesdburton/scandalorian-discovery-engine:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-discovery-engine:latest charlesdburton/scandalorian-discovery-engine:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-discovery-engine:${{ github.sha }} charlesdburton/scandalorian-discovery-engine:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-discovery-engine:${{ github.sha }}
 

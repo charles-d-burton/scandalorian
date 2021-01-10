@@ -69,31 +69,12 @@ RUN cd /app && \
 
 FROM scratch as arm
 COPY --from=build-arm /app/discover-engine /go/bin/discover-engine
-#COPY --from=build-arm /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-#COPY --from=build-arm /app/ncat /bin/ncat
-#COPY --from=build-arm /app/ndiff /bin/ndiff
-#COPY --from=build-arm /app/nping /bin/nping
-#COPY --from=build-arm /app/nmap /bin/nmap
-#COPY ./scanner.sh .
-
 ENTRYPOINT [ "/go/bin/discover-engine" ]
 
 FROM scratch as arm64
 COPY --from=build-arm64 /app/discover-engine /go/bin/discover-engine
-#COPY --from=build-arm64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-#COPY --from=build-arm64 /app/ncat /bin/ncat
-#COPY --from=build-arm64 /app/ndiff /bin/ndiff
-#COPY --from=build-arm64 /app/nping /bin/nping
-#COPY --from=build-arm64 /app/nmap /bin/nmap
-#COPY ./scanner.sh .
 ENTRYPOINT ["/go/bin/discover-engine"]
 
 FROM scratch as amd64
 COPY --from=build-amd64 /app/discover-engine /go/bin/discover-engine
-#COPY --from=build-amd64 /app/libpcap-1.9.1/ /go/bin/libpcap-1.9.1/
-#COPY --from=build-amd64 /app/ncat /bin/ncat
-#COPY --from=build-amd64 /app/ndiff /bin/ndiff
-#COPY --from=build-amd64 /app/nping /bin/nping
-#COPY --from=build-amd64 /app/nmap /bin/nmap
-#COPY ./scanner.sh .
 ENTRYPOINT ["/go/bin/discover-engine"]

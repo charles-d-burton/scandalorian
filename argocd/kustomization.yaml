@@ -5,9 +5,15 @@ resources:
 - discovery.yaml
 - scan.yaml
 images:
+- name: charlesdburton/scandalorian-discovery-engine:latest
+  newName: charlesdburton/scandalorian-discovery-engine
+  newTag: 7049a6bb7c2162b44ed8a1af51cea369b004d342
 - name: charlesdburton/scandalorian-discovery:latest
   newName: charlesdburton/scandalorian-discovery
   newTag: othersha2
 - name: charlesdburton/scandalorian-ingest:latest
   newName: charlesdburton/scandalorian-ingest
-  newTag: othersha
+  newTag: 7049a6bb7c2162b44ed8a1af51cea369b004d342
+- name: charlesdburton/scandalorian-scan-engine:latest
+  newName: charlesdburton/scandalorian-scan-engine
+  newTag: 7049a6bb7c2162b44ed8a1af51cea369b004d342

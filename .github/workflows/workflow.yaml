@@ -62,7 +62,7 @@ jobs:
       - name: Annotate Arm64
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-ingest:${{ github.sha }} charlesdburton/scandalorian-ingest:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:late${{ github.sha }}st charlesdburton/scandalorian-ingest:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:${{ github.sha }}st charlesdburton/scandalorian-ingest:amd64
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-ingest:${{ github.sha }}
   scan-engine-build-arm:

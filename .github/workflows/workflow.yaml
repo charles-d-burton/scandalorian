@@ -14,9 +14,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
         working-directory: ingest
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:arm --target=arm --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-ingest:arm --target=arm --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-ingest:arm
+        run: docker push charlesdburton/scandalorian-ingest:arm
   ingest-build-arm64:
     runs-on: ubuntu-latest
     name: Build arm64 version of ingest
@@ -26,9 +26,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
         working-directory: ingest
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:arm64 --target=arm64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-ingest:arm64 --target=arm64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-ingest:arm64
+        run: docker push charlesdburton/scandalorian-ingest:arm64
   ingest-build-amd64:
     runs-on: ubuntu-latest
     name: Build amd64 version of ingest
@@ -38,9 +38,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
         working-directory: ingest
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-ingest:amd64 --target=amd64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-ingest:amd64 --target=amd64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-ingest:amd64
+        run: docker push charlesdburton/scandalorian-ingest:amd64
   ingest-build-manifest:
     runs-on: ubuntu-latest
     name: Collect manifest and push
@@ -51,18 +51,18 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
         run: |
-          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-ingest:latest \
-          charlesdburton/kanscan-ingest:amd64 \
-          charlesdburton/kanscan-ingest:arm \
-          charlesdburton/kanscan-ingest:arm64 
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/scandalorian-ingest:latest \
+          charlesdburton/scandalorian-ingest:amd64 \
+          charlesdburton/scandalorian-ingest:arm \
+          charlesdburton/scandalorian-ingest:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-ingest:latest charlesdburton/scandalorian-ingest:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-ingest:latest charlesdburton/scandalorian-ingest:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-ingest:latest charlesdburton/kanscan-ingest:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-ingest:latest charlesdburton/scandalorian-ingest:amd64
       - name: Push Manifest
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-ingest:latest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-ingest:latest
   scan-engine-build-arm:
     runs-on: ubuntu-latest
     name: Build arm version of scan-engine
@@ -72,9 +72,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
         working-directory: scan-engine
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-scan-engine:arm --target=arm --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-scan-engine:arm --target=arm --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-scan-engine:arm
+        run: docker push charlesdburton/scandalorian-scan-engine:arm
   scan-engine-build-arm64:
     runs-on: ubuntu-latest
     name: Build arm64 version of scan-engine
@@ -84,9 +84,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
         working-directory: scan-engine
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-scan-engine:arm64 --target=arm64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-scan-engine:arm64 --target=arm64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-scan-engine:arm64
+        run: docker push charlesdburton/scandalorian-scan-engine:arm64
   scan-engine-build-amd64:
     runs-on: ubuntu-latest
     name: Build amd64 version of scan-engine
@@ -96,9 +96,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
         working-directory: scan-engine
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-scan-engine:amd64 --target=amd64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-scan-engine:amd64 --target=amd64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-scan-engine:amd64
+        run: docker push charlesdburton/scandalorian-scan-engine:amd64
   scan-engine-build-manifest:
     runs-on: ubuntu-latest
     name: Collect manifest and push scan-engine
@@ -109,18 +109,18 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
         run: |
-          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-scan-engine:latest \
-          charlesdburton/kanscan-scan-engine:amd64 \
-          charlesdburton/kanscan-scan-engine:arm \
-          charlesdburton/kanscan-scan-engine:arm64 
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/scandalorian-scan-engine:latest \
+          charlesdburton/scandalorian-scan-engine:amd64 \
+          charlesdburton/scandalorian-scan-engine:arm \
+          charlesdburton/scandalorian-scan-engine:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-scan-engine:latest charlesdburton/scandalorian-scan-engine:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-scan-engine:latest charlesdburton/scandalorian-scan-engine:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-scan-engine:latest charlesdburton/kanscan-scan-engine:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-scan-engine:latest charlesdburton/scandalorian-scan-engine:amd64
       - name: Push Manifest
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-scan-engine:latest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-scan-engine:latest
   discovery-engine-build-arm:
     runs-on: ubuntu-latest
     name: Build arm version of discovery-engine
@@ -130,9 +130,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm
         working-directory: discovery-engine
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-discovery-engine:arm --target=arm --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-discovery-engine:arm --target=arm --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-discovery-engine:arm
+        run: docker push charlesdburton/scandalorian-discovery-engine:arm
   discovery-engine-build-arm64:
     runs-on: ubuntu-latest
     name: Build arm64 version of discovery-engine
@@ -142,9 +142,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Arm64
         working-directory: discovery-engine
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-discovery-engine:arm64 --target=arm64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-discovery-engine:arm64 --target=arm64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-discovery-engine:arm64
+        run: docker push charlesdburton/scandalorian-discovery-engine:arm64
   discovery-engine-build-amd64:
     runs-on: ubuntu-latest
     name: Build amd64 version of discovery-engine
@@ -154,9 +154,9 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build AMD64
         working-directory: discovery-engine
-        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/kanscan-discovery-engine:amd64 --target=amd64 --file=./Dockerfile .
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-discovery-engine:amd64 --target=amd64 --file=./Dockerfile .
       - name: Push Image
-        run: docker push charlesdburton/kanscan-discovery-engine:amd64
+        run: docker push charlesdburton/scandalorian-discovery-engine:amd64
   discovery-engine-build-manifest:
     runs-on: ubuntu-latest
     name: Collect manifest and push discovery-engine
@@ -167,16 +167,16 @@ jobs:
         run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
       - name: Build Manifest
         run: |
-          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/kanscan-discovery-engine:latest \
-          charlesdburton/kanscan-discovery-engine:amd64 \
-          charlesdburton/kanscan-discovery-engine:arm \
-          charlesdburton/kanscan-discovery-engine:arm64 
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/scandalorian-discovery-engine:latest \
+          charlesdburton/scandalorian-discovery-engine:amd64 \
+          charlesdburton/scandalorian-discovery-engine:arm \
+          charlesdburton/scandalorian-discovery-engine:arm64 
       - name: Annotate Arm
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/kanscan-discovery-engine:latest charlesdburton/kanscan-discovery-engine:arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-discovery-engine:latest charlesdburton/scandalorian-discovery-engine:arm
       - name: Annotate Arm64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/kanscan-discovery-engine:latest charlesdburton/kanscan-discovery-engine:arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-discovery-engine:latest charlesdburton/scandalorian-discovery-engine:arm64
       - name: Annotate AMD64
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/kanscan-discovery-engine:latest charlesdburton/kanscan-discovery-engine:amd64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-discovery-engine:latest charlesdburton/scandalorian-discovery-engine:amd64
       - name: Push Manifest
-        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/kanscan-discovery-engine:latest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-discovery-engine:latest
 

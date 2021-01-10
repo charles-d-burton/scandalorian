@@ -5,6 +5,9 @@ resources:
 - discovery.yaml
 - scan.yaml
 images:
+- name: charlesdburton/scandalorian-discovery:latest
+  newName: charlesdburton/scandalorian-discovery
+  newTag: othersha2
 - name: charlesdburton/scandalorian-ingest:latest
   newName: charlesdburton/scandalorian-ingest
-  newTag: 6b3f10e07d0f23bbcf32b68705c928fd0521449d
+  newTag: othersha

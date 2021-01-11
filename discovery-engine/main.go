@@ -160,7 +160,7 @@ func createWorkerPool(workers int) error {
 					chansByIface[iface.Name] = ch
 					for w := 1; w <= workers; w++ {
 						var worker PcapWorker
-						err := worker.initializeWorker(&iface)
+						err := worker.initializeWorker(w, &iface)
 						if err != nil {
 							return err
 						}
@@ -207,7 +207,8 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 }
 
 //initializeWorker Sets the Pcap values, creates a pcap Handler for the worker thread.
-func (worker *PcapWorker) initializeWorker(iface *net.Interface) error {
+func (worker *PcapWorker) initializeWorker(id int, iface *net.Interface) error {
+	log.Infof("Starting worker: %d", id)
 	log.Infof("Initalizing a PcapWorker for iface: %v", iface.Name)
 	worker.opts = gopacket.SerializeOptions{
 		FixLengths:       true,
@@ -236,6 +237,8 @@ func (worker *PcapWorker) initializeWorker(iface *net.Interface) error {
 // one) or destination IP (if no gateway is necessary), then waits for an ARP
 // reply.  This is pretty slow right now, since it blocks on the ARP
 // request/reply.
+
+// TODO: Looks like this is busted
 func (worker *PcapWorker) getHwAddr(scw *ScanWork) (net.HardwareAddr, error) {
 	start := time.Now()
 	arpDst := scw.Dst

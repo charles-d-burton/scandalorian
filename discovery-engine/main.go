@@ -157,7 +157,7 @@ func createWorkerPool(workers int) error {
 		for idx, addr := range addrs {
 			log.Info("Starting worker for interface: ", addr.String(), " at idx: ", idx)
 			if inet, ok := addr.(*net.IPNet); ok { //Make sure we ignore loopback
-				if !inet.IP.IsLoopback() {
+				if !inet.IP.IsLoopback() && inet.IP.To4() != nil {
 					log.Info("IFACE: ", inet.IP.String())
 					ch := make(chan *ScanWork, 100)
 					chansByIface[iface.Name] = ch

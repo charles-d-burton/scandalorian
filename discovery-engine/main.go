@@ -58,6 +58,7 @@ type PcapWorker struct {
 
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(log.DebugLevel)
 	v := viper.New()
 	v.SetEnvPrefix("engine")
 	v.AutomaticEnv()

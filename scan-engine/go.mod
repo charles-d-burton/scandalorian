@@ -3,25 +3,31 @@ module github.com/charles-d-burton/kanscan/scan-engine/v2
 go 1.13
 
 require (
-	github.com/Ullaakut/nmap v2.0.0+incompatible
+	github.com/Ullaakut/nmap v2.0.2+incompatible
+	github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6 // indirect
 	github.com/basgys/goxml2json v1.1.0
 	github.com/charles-d-burton/gopacket v1.1.18
-	github.com/charles-d-burton/kanscan v0.0.0-20200104022507-281aaa599142
-	github.com/json-iterator/go v1.1.9
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/nats-io/jwt v0.3.2 // indirect
-	github.com/nats-io/nats.go v1.9.1
-	github.com/pelletier/go-toml v1.6.0 // indirect
-	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/afero v1.2.2 // indirect
+	github.com/charles-d-burton/kanscan v0.0.0-20210110235435-0b31a5327cee
+	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/json-iterator/go v1.1.10
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
+	github.com/magiconair/properties v1.8.4 // indirect
+	github.com/mitchellh/mapstructure v1.4.0 // indirect
+	github.com/nats-io/jwt v1.2.2 // indirect
+	github.com/nats-io/nats.go v1.10.0
+	github.com/pelletier/go-toml v1.8.1 // indirect
+	github.com/sirupsen/logrus v1.7.0
+	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.6.1
-	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876 // indirect
+	github.com/spf13/viper v1.7.1
+	github.com/ugorji/go v1.1.4 // indirect
+	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
 	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
-	golang.org/x/sys v0.0.0-20191228213918-04cbcbbfeed8 // indirect
-	golang.org/x/text v0.3.2 // indirect
-	gopkg.in/ini.v1 v1.51.1 // indirect
-	gopkg.in/yaml.v2 v2.2.7 // indirect
+	golang.org/x/sys v0.0.0-20210110051926-789bb1bd4061 // indirect
+	golang.org/x/text v0.3.5 // indirect
+	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

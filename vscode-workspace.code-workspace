@@ -20,6 +20,12 @@
 		},
 		{
 			"path": "argocd"
+		},
+		{
+			"path": "reversedns"
+		},
+		{	
+			"path": "zonewalk"
 		}
 	],
 	"settings": {}

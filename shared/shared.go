@@ -26,3 +26,18 @@ type Scan struct {
 	Result  string      `json:"result,omitempty"`
 	Request ScanRequest `json:"scan_request"`
 }
+
+//ReverseDNS structure to perform a reverse DNS lookup
+type ReverseDNS struct {
+	IP          string            `json:"ip"`
+	HostRecords map[string]string `json:"hosts"`
+	Request     ScanRequest       `json:"scan_request"`
+}
+
+//TODO: This requires more info, need to learn about zonewalking
+
+//Zonewalk structure to perform a zonewalk on a host or IP
+type Zonewalk struct {
+	IP      string      `json:"ip,omitempty"`
+	Request ScanRequest `json:"scan_request"`
+}

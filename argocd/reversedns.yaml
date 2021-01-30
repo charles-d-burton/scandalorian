@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scandalorian-reversedns
+  namespace: scandalorian
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: scandalorian-reversedns
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: scandalorian-reversedns
+    spec:
+      containers:
+      - image: charlesdburton/scandalorian-reversedns:latest
+        imagePullPolicy: Always
+        env:
+        - name: REVERSEDNS_HOST
+          value: "nats-cluster.default.svc"
+        - name: REVERSEDNS_HOST_PORT
+          value: "4222"
+        name: scandalorian-reversedns
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

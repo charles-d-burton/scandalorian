@@ -187,6 +187,67 @@ jobs:
       - name: Push Manifest
         run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-discovery-engine:${{ github.sha }}      
 
+  reversedns-engine-build-arm:
+    runs-on: ubuntu-latest
+    name: Build arm version of reversedns-engine
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm
+        working-directory: reversedns-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-reversedns-engine:arm --target=arm --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/scandalorian-reversedns-engine:arm
+  reversedns-engine-build-arm64:
+    runs-on: ubuntu-latest
+    name: Build arm64 version of reversedns-engine
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Arm64
+        working-directory: reversedns-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-reversedns-engine:arm64 --target=arm64 --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/scandalorian-reversedns-engine:arm64
+  reversedns-engine-build-amd64:
+    runs-on: ubuntu-latest
+    name: Build amd64 version of reversedns-engine
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build AMD64
+        working-directory: reversedns-engine
+        run: DOCKER_BUILDKIT=1 docker build -t charlesdburton/scandalorian-reversedns-engine:amd64 --target=amd64 --file=./Dockerfile .
+      - name: Push Image
+        run: docker push charlesdburton/scandalorian-reversedns-engine:amd64
+  reversedns-engine-build-manifest:
+    runs-on: ubuntu-latest
+    name: Collect manifest and push reversedns-engine
+    needs: ["reversedns-engine-build-arm", "reversedns-engine-build-arm64", "reversedns-engine-build-amd64"]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Docker Login
+        run: docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Manifest
+        run: |
+          DOCKER_CLI_EXPERIMENTAL=enabled docker manifest create charlesdburton/scandalorian-reversedns-engine:${{ github.sha }} \
+          charlesdburton/scandalorian-reversedns-engine:amd64 \
+          charlesdburton/scandalorian-reversedns-engine:arm \
+          charlesdburton/scandalorian-reversedns-engine:arm64 
+      - name: Annotate Arm
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm charlesdburton/scandalorian-reversedns-engine:${{ github.sha }} charlesdburton/scandalorian-reversedns-engine:arm
+      - name: Annotate Arm64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch arm64 charlesdburton/scandalorian-reversedns-engine:${{ github.sha }} charlesdburton/scandalorian-reversedns-engine:arm64
+      - name: Annotate AMD64
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest annotate --arch amd64 charlesdburton/scandalorian-reversedns-engine:${{ github.sha }} charlesdburton/scandalorian-reversedns-engine:amd64
+      - name: Push Manifest
+        run: DOCKER_CLI_EXPERIMENTAL=enabled docker manifest push charlesdburton/scandalorian-reversedns-engine:${{ github.sha }}      
+
+  
   deploy:
     name: Deploy
     runs-on: ubuntu-latest

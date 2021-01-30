@@ -120,7 +120,7 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 }
 
 func (worker *NMAPWorker) start(id int) error {
-	log.Infof("Starting NMAP Worker %d", id)
+	log.Infof("Starting NMAP Worker %d", id, "waiting for work...")
 	for scan := range workQueue {
 		if len(scan.Ports) > 0 {
 			log.Infof("Scanning ports for host %v with nmap", scan.IP)

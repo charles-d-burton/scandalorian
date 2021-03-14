@@ -30,10 +30,11 @@ type ScanRequest struct {
 
 //Scan structure to send to message queue for scanning
 type Scan struct {
-	IP    string   `json:"ip"`
-	ID    string   `json:"id"`
-	Topic string   `json:"-"`
-	Ports []string `json:"ports,omitempty"`
+	IP        string   `json:"ip"`
+	ScanID    string   `json:"scan_id"`
+	RequestID string   `json:"request_id"`
+	Topic     string   `json:"-"`
+	Ports     []string `json:"ports,omitempty"`
 }
 
 var (
@@ -178,7 +179,8 @@ func enQueueRequest(scanreq *ScanRequest) error {
 			if len(addrs) > 0 { //Generate lots of scan objects as we're scanning a subnet
 				for _, addr := range addrs {
 					var scan Scan
-					scan.ID = id
+					scan.RequestID = id
+					scan.ScanID = uuid.New().String()
 					scan.IP = addr
 					scan.Topic = topic
 					log.Info("Sending to topic: ", topic)
@@ -191,7 +193,8 @@ func enQueueRequest(scanreq *ScanRequest) error {
 				return nil
 			}
 			var scan Scan
-			scan.ID = id
+			scan.RequestID = id
+			scan.ScanID = uuid.New().String()
 			scan.IP = scanreq.Address
 			scan.Topic = topic
 			log.Info("Sending to topic: ", topic)

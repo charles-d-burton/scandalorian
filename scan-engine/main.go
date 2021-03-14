@@ -29,9 +29,11 @@ type MessageBus interface {
 
 //Scan structure to send to message queue for scanning
 type Scan struct {
-	IP    string   `json:"ip"`
-	ID    string   `json:"id"`
-	Ports []string `json:"ports,omitempty"`
+	IP        string   `json:"ip"`
+	ScanID    string   `json:"scan_id"`
+	RequestID string   `json:"request_id"`
+	Topic     string   `json:"-"`
+	Ports     []string `json:"ports,omitempty"`
 }
 
 //NMAPWorker Object to run scans
@@ -127,8 +129,10 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 
 func (worker *NMAPWorker) start(id int) error {
 	type Run struct {
-		Run *nmap.Run `json:"nmap_result"`
-		ID  string    `json:"id"`
+		Run       *nmap.Run `json:"nmap_result"`
+		IP        string    `json:"ip"`
+		ScanID    string    `json:"scan_id"`
+		RequestID string    `json:"request_id"`
 	}
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	log.Infof("Starting NMAP Worker %d", id, "waiting for work...")
@@ -162,14 +166,15 @@ func (worker *NMAPWorker) start(id int) error {
 			if err != nil {
 				log.Fatalf("nmap scan failed: %v", err)
 			}
-			if warns != nil && len(warns) > 0 {
+			if len(warns) > 0 {
 				for _, warn := range warns {
 					log.Infof("Warning: %v", warn)
 				}
 			}
 			var run Run
 			run.Run = result
-			run.ID = scan.ID
+			run.ScanID = scan.ScanID
+			run.RequestID = scan.RequestID
 			data, err := json.Marshal(&run)
 			if err != nil {
 				log.Errorf("Error marshalling result: %v", err)

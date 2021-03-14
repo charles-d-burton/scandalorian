@@ -14,9 +14,11 @@ type NatsConn struct {
 
 //Scan structure to send to message queue for scanning
 type Scan struct {
-	IP    string   `json:"ip"`
-	ID    string   `json:"id"`
-	Ports []string `json:"ports,omitempty"`
+	IP        string   `json:"ip"`
+	ScanID    string   `json:"scan_id"`
+	RequestID string   `json:"request_id"`
+	Topic     string   `json:"-"`
+	Ports     []string `json:"ports,omitempty"`
 }
 
 //Connect to the NATS message queue

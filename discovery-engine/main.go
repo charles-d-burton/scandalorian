@@ -29,7 +29,7 @@ const (
 var (
 	bus          MessageBus
 	workers      int
-	chansByIface = make(map[string]chan ScanWork, 100)
+	chansByIface = make(map[string]chan *ScanWork, 100)
 )
 
 //MessageBus Interface for making generic connections to message busses
@@ -42,24 +42,29 @@ type MessageBus interface {
 
 //Scan structure to send to message queue for scanning
 type Scan struct {
-	IP    string   `json:"ip"`
-	ID    string   `json:"id"`
-	Ports []string `json:"ports,omitempty"`
+	IP        string   `json:"ip"`
+	ScanID    string   `json:"scan_id"`
+	RequestID string   `json:"request_id"`
+	Topic     string   `json:"-"`
+	Ports     []string `json:"ports,omitempty"`
 }
 
 //ScanWork holds the info necessary to run a scan
 type ScanWork struct {
-	Scan Scan
-	GW   net.IP
-	Src  net.IP
-	Dst  net.IP
+	ScanID    string   `json:"scan_id"`
+	RequestID string   `json:"request_id"`
+	IP        string   `json:"ip"`
+	Ports     []string `json:"ports"`
+	GW        net.IP
+	Src       net.IP
+	Dst       net.IP
 }
 
 //PcapWorker Object to run scans
 type PcapWorker struct {
 	Handle  *pcap.Handle   //initialized once so we can reuse it
 	Iface   *net.Interface //The iface the worker is bound to
-	Reqs    chan ScanWork  //The work queue
+	Reqs    chan *ScanWork //The work queue
 	SrcPort layers.TCPPort
 	// opts and buf allow us to easily serialize packets in the send()
 	// method.
@@ -135,16 +140,18 @@ func main() {
 			log.Info(err)
 		}
 		scWork := &ScanWork{ //Create full SYN Scan work Object
-			GW:   gw,
-			Src:  src,
-			Scan: scan,
-			Dst:  ip,
+			GW:        gw,
+			Src:       src,
+			RequestID: scan.RequestID,
+			ScanID:    scan.ScanID,
+			IP:        scan.IP,
+			Dst:       ip,
 		}
 		i, ok := chansByIface[iface.Name] //Get the right work queue by iface
 		if !ok {
 			log.Errorf("Interface not found: %v", iface.Name)
 		}
-		i <- *scWork //Drop the wrok in the queue
+		i <- scWork //Drop the wrok in the queue
 	}
 }
 
@@ -164,7 +171,7 @@ func createWorkerPool(workers int) error {
 			if inet, ok := addr.(*net.IPNet); ok { //Make sure we ignore loopback
 				if !inet.IP.IsLoopback() && inet.IP.To4() != nil {
 					log.Info("IFACE: ", inet.IP.String())
-					ch := make(chan ScanWork, 100)
+					ch := make(chan *ScanWork, 100)
 					chansByIface[iface.Name] = ch
 					for w := 1; w <= workers; w++ {
 						var worker PcapWorker
@@ -321,7 +328,7 @@ func (worker *PcapWorker) send(l ...gopacket.SerializableLayer) error {
 
 func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	//Scan the desired endpoint
-	scw.Scan.Ports = make([]string, 0)
+	scw.Ports = make([]string, 0)
 	log.Infof("Received scan Request on PcapWorker for Iface: %v", pWorker.Iface.Name)
 	// First off, get the MAC address we should be sending packets to.
 	hwaddr, err := pWorker.getHwAddr(scw)
@@ -352,9 +359,9 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	// against it and discard useless packets.
 	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
 	start := time.Now()
-	var limiter *rate.Limiter
+	//var limiter *rate.Limiter
 	//limited := false
-	limiter = rate.NewLimiter(rate.Every(time.Second/time.Duration(rateLimit)), 1)
+	limiter := rate.NewLimiter(rate.Every(time.Second/time.Duration(rateLimit)), 1)
 
 	for {
 		// Use the limiter if the desired packet per second is defined
@@ -414,14 +421,19 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 		} else if tcp.SYN && tcp.ACK {
 			//scw.Scan.Request.Ports = append(scw.Scan.Request.Ports, strconv.Itoa(port))
 			log.Infof("For host %v  port %v open", scw.Dst, tcp.SrcPort)
-			scw.Scan.Ports = append(scw.Scan.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0])) //Get just the port number
+			scw.Ports = append(scw.Ports, (strings.Split(tcp.SrcPort.String(), "(")[0])) //Get just the port number
 		} else {
 			// log.Printf("ignoring useless packet")
 		}
 	}
-	if len(scw.Scan.Ports) > 0 {
+	if len(scw.Ports) > 0 {
 		log.Infof("Found open ports on host, publishing to topic: %v", enqueueTopic)
-		err := bus.Publish(enqueueTopic, &scw.Scan)
+		var scan Scan
+		scan.RequestID = scw.RequestID
+		scan.ScanID = scw.ScanID
+		scan.Ports = scw.Ports
+		scan.IP = scw.IP
+		err := bus.Publish(enqueueTopic, &scan)
 		if err != nil {
 			log.Error(err)
 		}

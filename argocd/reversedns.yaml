@@ -21,7 +21,7 @@ spec:
         app: scandalorian-reversedns
     spec:
       containers:
-      - image: charlesdburton/scandalorian-reversedns:latest
+      - image: charlesdburton/scandalorian-reversedns-engine:latest
         imagePullPolicy: Always
         env:
         - name: REVERSEDNS_HOST

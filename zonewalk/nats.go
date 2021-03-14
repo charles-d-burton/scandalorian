@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/charles-d-burton/kanscan/shared"
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
@@ -11,6 +10,13 @@ import (
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
 	Conn *nats.Conn
+}
+
+//Scan structure to send to message queue for scanning
+type Scan struct {
+	IP    string   `json:"ip"`
+	ID    string   `json:"id"`
+	Ports []string `json:"ports,omitempty"`
 }
 
 //Connect to the NATS message queue
@@ -26,7 +32,7 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 }
 
 //Publish push messages to NATS
-func (natsConn *NatsConn) Publish(scan *shared.Scan) error {
+func (natsConn *NatsConn) Publish(scan *Scan) error {
 	log.Info("Publishing scan: ", scan)
 	data, err := json.Marshal(scan)
 	if err != nil {

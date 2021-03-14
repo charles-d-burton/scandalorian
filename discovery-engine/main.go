@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"math/rand"
 	"net"
@@ -14,31 +13,42 @@ import (
 	"github.com/charles-d-burton/gopacket/layers"
 	"github.com/charles-d-burton/gopacket/pcap"
 	"github.com/charles-d-burton/gopacket/routing"
-	"github.com/charles-d-burton/kanscan/shared"
+	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/time/rate"
 )
 
+const (
+	dequeueTopic = "scan-discovery-queue"
+	enqueueTopic = "scan-engine-queue"
+	rateLimit    = 3000
+)
+
 var (
 	bus          MessageBus
 	workers      int
-	dequeueTopic string
-	enqueueTopic string
 	chansByIface = make(map[string]chan *ScanWork)
 )
 
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
-	Publish(topic string, scan *shared.Scan) error
+	Publish(topic string, scan *Scan) error
 	Subscribe(topic string) (chan []byte, error)
 	Close()
 }
 
+//Scan structure to send to message queue for scanning
+type Scan struct {
+	IP    string   `json:"ip"`
+	ID    string   `json:"id"`
+	Ports []string `json:"ports,omitempty"`
+}
+
 //ScanWork holds the info necessary to run a scan
 type ScanWork struct {
-	Scan *shared.Scan
+	Scan *Scan
 	GW   net.IP
 	Src  net.IP
 	Dst  net.IP
@@ -57,6 +67,7 @@ type PcapWorker struct {
 }
 
 func main() {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.DebugLevel) //TODO: Remember to reset
 	v := viper.New()
@@ -64,12 +75,6 @@ func main() {
 	v.AutomaticEnv()
 	if !v.IsSet("port") || !v.IsSet("host") {
 		log.Fatal("Must set host and port for message bus")
-	}
-	if !v.IsSet("dequeue_topic") {
-		dequeueTopic = "scan-discovery-queue"
-	}
-	if !v.IsSet("enqueue_topic") {
-		enqueueTopic = "scan-engine-queue"
 	}
 	if !v.IsSet("workers") {
 		workers = 5
@@ -111,7 +116,7 @@ func main() {
 	bus = nbus
 	for data := range dch { //Wait for incoming scan requests
 		log.Info(string(data))
-		var scan shared.Scan
+		var scan Scan
 		err := json.Unmarshal(data, &scan)
 		if err != nil {
 			log.Warn(err)
@@ -348,29 +353,20 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, scw.Dst, scw.Src)
 	start := time.Now()
 	var limiter *rate.Limiter
-	limited := false
-	log.Debugf("rate limit set to: %d", scw.Scan.Request.PPS)
-	if scw.Scan.Request.PPS > 0 {
-		limiter = rate.NewLimiter(rate.Every(time.Second/time.Duration(scw.Scan.Request.PPS)), 1)
-		limited = true
-	}
-	//
-	//ctx := context.Background()
-	//defer ctx.Done()
+	//limited := false
+	limiter = rate.NewLimiter(rate.Every(time.Second/time.Duration(rateLimit)), 1)
+
 	for {
 		// Use the limiter if the desired packet per second is defined
-
-		if limited {
-			log.Debugf("rate limited on port: %v", tcp.DstPort)
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			err := limiter.Wait(ctx) //Wait for the rate limit
-			if err != nil {
-				log.Debug(err)
-				cancel()
-				continue
-			}
+		log.Debugf("rate limited on port: %v", tcp.DstPort)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err := limiter.Wait(ctx) //Wait for the rate limit
+		if err != nil {
+			log.Debug(err)
 			cancel()
+			continue
 		}
+		cancel()
 		// Send one packet per loop iteration until we've sent packets
 		// to all of ports [1, 65535].
 		if tcp.DstPort < 65535 {

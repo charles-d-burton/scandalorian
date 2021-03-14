@@ -1,29 +1,37 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Ullaakut/nmap"
-	"github.com/charles-d-burton/kanscan/shared"
 	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
+const (
+	dequeueTopic = "scan-engine-queue"
+	enqueueTopic = "collector-scan-queue"
+)
+
 var (
-	workers      int
-	dequeueTopic string
-	workQueue    = make(chan *shared.Scan, 10)
-	json         = jsoniter.ConfigCompatibleWithStandardLibrary
+	workers   int
+	workQueue = make(chan *Scan, 10)
+	bus       MessageBus
 	//args         = make(map[string]string)
 )
 
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
-	Publish(scan *shared.Scan) error
+	Publish(data []byte) error
 	Subscribe(topic string) (chan []byte, error)
 	Close()
+}
+
+//Scan structure to send to message queue for scanning
+type Scan struct {
+	IP    string   `json:"ip"`
+	ID    string   `json:"id"`
+	Ports []string `json:"ports,omitempty"`
 }
 
 //NMAPWorker Object to run scans
@@ -31,15 +39,13 @@ type NMAPWorker struct {
 }
 
 func main() {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	log.SetFormatter(&log.JSONFormatter{})
 	v := viper.New()
 	v.SetEnvPrefix("engine")
 	v.AutomaticEnv()
 	if !v.IsSet("port") || !v.IsSet("host") {
 		log.Fatal("Must set host and port for message bus")
-	}
-	if !v.IsSet("dequeue_topic") {
-		dequeueTopic = "scan-engine-queue"
 	}
 	if !v.IsSet("workers") {
 		workers = 5
@@ -67,7 +73,7 @@ func main() {
 	}
 	for data := range dch { //Wait for incoming scan requests
 		log.Info(string(data))
-		var scan shared.Scan
+		var scan Scan
 		err := json.Unmarshal(data, &scan)
 		if err != nil {
 			log.Error(err)
@@ -120,6 +126,11 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 }
 
 func (worker *NMAPWorker) start(id int) error {
+	type Run struct {
+		Run *nmap.Run `json:"nmap_result"`
+		ID  string    `json:"id"`
+	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	log.Infof("Starting NMAP Worker %d", id, "waiting for work...")
 	for scan := range workQueue {
 		if len(scan.Ports) > 0 {
@@ -156,14 +167,14 @@ func (worker *NMAPWorker) start(id int) error {
 					log.Infof("Warning: %v", warn)
 				}
 			}
-			fmt.Println("")
-			fmt.Println("")
-			data, err := json.Marshal(&result)
+			var run Run
+			run.Run = result
+			run.ID = scan.ID
+			data, err := json.Marshal(&run)
 			if err != nil {
 				log.Errorf("Error marshalling result: %v", err)
 			}
-			fmt.Println(string(data))
-			fmt.Println("")
+			bus.Publish(data)
 		}
 	}
 	return nil

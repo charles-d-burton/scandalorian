@@ -1,14 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/charles-d-burton/kanscan/shared"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -18,13 +16,33 @@ import (
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
-	Publish(scan *shared.Scan) error
+	Publish(scan *Scan) error
 	Close()
 }
 
+//ScanRequest object instructing system on how to scan.
+type ScanRequest struct {
+	Address   string   `json:"address,omitempty"`
+	Host      string   `json:"host,omitempty"`
+	PPS       int      `json:"pps,omitempty"`
+	ScanTypes []string `json:"scan_types:omitempty"`
+}
+
+//Scan structure to send to message queue for scanning
+type Scan struct {
+	IP    string   `json:"ip"`
+	ID    string   `json:"id"`
+	Topic string   `json:"-"`
+	Ports []string `json:"ports,omitempty"`
+}
+
 var (
-	messageBus   MessageBus
-	enqueueTopic string
+	messageBus MessageBus
+	topics     = map[string]string{
+		"discovery":  "scan-discovery-queue",
+		"zonewalk":   "scan-zonewalk-queue",
+		"reversedns": "scan-reversedns-queue",
+	}
 )
 
 func main() {
@@ -34,9 +52,6 @@ func main() {
 	v.AutomaticEnv()
 	if !v.IsSet("port") || !v.IsSet("host") {
 		log.Fatal("Must set host and port for message bus")
-	}
-	if !v.IsSet("enqueue_topic") {
-		enqueueTopic = "scan-discovery-queue"
 	}
 	bus, err := connectBus(v)
 	if err != nil {
@@ -83,7 +98,7 @@ func connectBus(v *viper.Viper) (MessageBus, error) {
 }
 
 func handlePost(c *gin.Context) {
-	var scanRequest shared.ScanRequest
+	var scanRequest ScanRequest
 	if err := c.ShouldBindJSON(&scanRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -94,6 +109,8 @@ func handlePost(c *gin.Context) {
 	} else if scanRequest.Address != "" && scanRequest.Host != "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "host and address defined"})
 		return
+	} else if scanRequest.Host != "" && strings.Contains(strings.ToLower(scanRequest.Host), "localhost") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "cannot scan localhost"})
 	}
 	if scanRequest.Address != "" {
 		parts := strings.Split(scanRequest.Address, "/") //Check for CIDR notation
@@ -121,50 +138,61 @@ func handlePost(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "cannot scan loopback"})
 			return
 		}
-	}
-	scanRequest.ID = uuid.New().String()
-	if err := enQueueRequest(&scanRequest); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		if err := enQueueRequest(&scanRequest); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	} else if scanRequest.Host != "" {
+		addr, err := net.LookupIP(scanRequest.Host)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "unknown host"})
+			return
+		}
+		fmt.Println("IP address: ", addr)
+		for _, address := range addr {
+			var req ScanRequest
+			req = scanRequest
+			req.Address = address.String()
+			if err := enQueueRequest(&scanRequest); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+		}
 	}
 }
 
-func enQueueRequest(scanreq *shared.ScanRequest) error {
-	var scans []shared.Scan
-	if scanreq.Host != "" {
-		addr, err := net.LookupIP(scanreq.Host)
-		if err != nil {
-			return errors.New("Unknown Host")
-		} else {
-			fmt.Println("IP address: ", addr)
-			for _, address := range addr {
-				var scan shared.Scan
-				scan.IP = address.String()
-				scan.Request = *scanreq
-				scan.Type = shared.Discovery
-				scans = append(scans, scan)
-			}
-		}
-	} else {
-		addrs, err := Hosts(scanreq.Address)
-		if err != nil {
-			return err
-		}
-		var scan shared.Scan
-		for _, addr := range addrs {
-			scan.IP = addr
-			scan.Request = *scanreq
-			scan.Type = shared.Discovery
-			scans = append(scans, scan)
-		}
+func enQueueRequest(scanreq *ScanRequest) error {
+	id := uuid.New().String()
 
-	}
-	for _, scan := range scans {
-		log.Println(scan)
-		err := messageBus.Publish(&scan)
-		if err != nil {
-			log.Warn(err)
-			return err
+	for _, scanType := range scanreq.ScanTypes {
+		if topic, ok := topics[scanType]; ok {
+			addrs, err := Hosts(scanreq.Address)
+			if err != nil {
+				return err
+			}
+			if len(addrs) > 0 {
+				for _, addr := range addrs {
+					var scan Scan
+					scan.ID = id
+					scan.IP = addr
+					scan.Topic = topic
+					err = messageBus.Publish(&scan)
+					if err != nil {
+						log.Warn(err)
+						return err
+					}
+				}
+				return nil
+			}
+			var scan Scan
+			scan.ID = id
+			scan.IP = scanreq.Address
+			scan.Topic = topic
+			err = messageBus.Publish(&scan)
+			if err != nil {
+				log.Warn(err)
+				return err
+			}
 		}
 	}
 	return nil

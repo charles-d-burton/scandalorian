@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-
-	"github.com/charles-d-burton/kanscan/shared"
+	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,13 +24,14 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 }
 
 //Publish push messages to NATS
-func (natsConn *NatsConn) Publish(scan *shared.Scan) error {
-	log.Info("Publishing scan: ", scan)
+func (natsConn *NatsConn) Publish(scan *Scan) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, err := json.Marshal(scan)
 	if err != nil {
 		return err
 	}
-	err = natsConn.Conn.Publish(enqueueTopic, data)
+	log.Info("Publishing scan: ", string(data))
+	err = natsConn.Conn.Publish(scan.Topic, data)
 	return err
 }
 

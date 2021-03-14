@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/charles-d-burton/kanscan/shared"
+	"fmt"
+
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
@@ -25,13 +26,11 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 }
 
 //Publish push messages to NATS
-func (natsConn *NatsConn) Publish(scan *shared.Scan) error {
-	log.Info("Publishing scan: ", scan)
-	data, err := json.Marshal(scan)
-	if err != nil {
-		return err
-	}
-	err = natsConn.Conn.Publish(dequeueTopic, data)
+func (natsConn *NatsConn) Publish(data []byte) error {
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println(string(data))
+	err := natsConn.Conn.Publish(enqueueTopic, data)
 	return err
 }
 

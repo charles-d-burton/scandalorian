@@ -1,27 +1,36 @@
 package main
 
 import (
-	"encoding/json"
 	"runtime"
 
-	"github.com/charles-d-burton/kanscan/shared"
+	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+)
+
+const (
+	dequeueTopic = "scan-reversedns-queue"
+	enqueueTopic = "collector-reversedns-queue"
 )
 
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
-	Publish(scan *shared.Scan) error
+	Publish(data []byte) error
 	Subscribe(topic string) (chan []byte, error)
 	Close()
 }
 
+//Scan structure to send to message queue for scanning
+type Scan struct {
+	IP    string   `json:"ip"`
+	ID    string   `json:"id"`
+	Ports []string `json:"ports,omitempty"`
+}
+
 var (
-	messageBus   MessageBus
-	dequeueTopic string
-	enqueueTopic string
-	workQueue    = make(chan *shared.Scan, 10)
+	messageBus MessageBus
+	workQueue  = make(chan *Scan, 10)
 )
 
 //ReverseDNSWorker Object to run scans
@@ -29,18 +38,13 @@ type ReverseDNSWorker struct {
 }
 
 func main() {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	log.SetFormatter(&log.JSONFormatter{})
 	v := viper.New()
 	v.SetEnvPrefix("reversedns")
 	v.AutomaticEnv()
 	if !v.IsSet("port") || !v.IsSet("host") {
 		log.Fatal("Must set host and port for message bus")
-	}
-	if !v.IsSet("dequeeu_topic") {
-		dequeueTopic = "scan-reversedns-queue"
-	}
-	if !v.IsSet("enqueue_topic") {
-		enqueueTopic = "scan-collector-queue"
 	}
 	bus, err := connectBus(v)
 	if err != nil {
@@ -60,7 +64,7 @@ func main() {
 
 	for data := range dch { //Wait for incoming scan requests
 		log.Info(string(data))
-		var scan shared.Scan
+		var scan Scan
 		err := json.Unmarshal(data, &scan)
 		if err != nil {
 			log.Error(err)
@@ -82,7 +86,7 @@ func createWorkerPool(workers int) error {
 func (worker *ReverseDNSWorker) start(id int) error {
 	log.Infof("Starting ReverseDNS Worker %d", id)
 	for msg := range workQueue {
-		log.Info("Scan for: ", msg.Request.Address)
+		log.Info("Scan for: ", msg.IP)
 	}
 	return nil
 }

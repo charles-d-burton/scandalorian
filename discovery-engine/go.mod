@@ -3,8 +3,8 @@ module github.com/charles-d-burton/kanscan/discovery-engine/v2
 go 1.13
 
 require (
-	github.com/charles-d-burton/gopacket v1.1.18
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
+	github.com/google/gopacket v1.1.19
 	github.com/json-iterator/go v1.1.10
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect

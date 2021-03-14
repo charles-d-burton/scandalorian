@@ -15,6 +15,6 @@ images:
 - name: charlesdburton/scandalorian-reversedns:latest
   newName: charlesdburton/scandalorian-reversedns
   newTag: c9ca90172add4e0003d6352ab7fc13abae0d41aa
-- name: charlesdburton/scandalorian-scan-engine:latest
-  newName: charlesdburton/scandalorian-scan-engine
+- name: charlesdburton/scandalorian-reversedns-engine:latest
+  newName: charlesdburton/scandalorian-reversedns-engine
   newTag: db830adf81ee85e45ef57ab8b265ecd661ca9240

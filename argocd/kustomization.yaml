@@ -8,13 +8,13 @@ resources:
 images:
 - name: charlesdburton/scandalorian-discovery-engine:latest
   newName: charlesdburton/scandalorian-discovery-engine
-  newTag: fb743f0117e64a71026474c74ec5b8917df266ea
+  newTag: 5b1e158bb9b391afb9b43cab6f59802724aba7f2
 - name: charlesdburton/scandalorian-ingest:latest
   newName: charlesdburton/scandalorian-ingest
-  newTag: fb743f0117e64a71026474c74ec5b8917df266ea
+  newTag: 5b1e158bb9b391afb9b43cab6f59802724aba7f2
 - name: charlesdburton/scandalorian-reversedns-engine:latest
   newName: charlesdburton/scandalorian-reversedns-engine
-  newTag: fb743f0117e64a71026474c74ec5b8917df266ea
+  newTag: 5b1e158bb9b391afb9b43cab6f59802724aba7f2
 - name: charlesdburton/scandalorian-scan-engine:latest
   newName: charlesdburton/scandalorian-scan-engine
-  newTag: fb743f0117e64a71026474c74ec5b8917df266ea
+  newTag: 5b1e158bb9b391afb9b43cab6f59802724aba7f2

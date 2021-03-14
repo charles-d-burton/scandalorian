@@ -175,7 +175,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 			if err != nil {
 				return err
 			}
-			if len(addrs) > 0 {
+			if len(addrs) > 0 { //Generate lots of scan objects as we're scanning a subnet
 				for _, addr := range addrs {
 					var scan Scan
 					scan.ID = id

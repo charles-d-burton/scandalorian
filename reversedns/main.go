@@ -86,7 +86,7 @@ func createWorkerPool(workers int) error {
 func (worker *ReverseDNSWorker) start(id int) error {
 	log.Infof("Starting ReverseDNS Worker %d", id)
 	for msg := range workQueue {
-		log.Info("Scan for: ", msg.IP)
+		log.Info("Reverse DNS Scan for: ", msg.IP)
 	}
 	return nil
 }

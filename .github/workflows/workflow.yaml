@@ -270,6 +270,7 @@ jobs:
           kustomize edit set image charlesdburton/scandalorian-discovery-engine:latest=charlesdburton/scandalorian-discovery-engine:${{ github.sha }}
           kustomize edit set image charlesdburton/scandalorian-scan-engine:latest=charlesdburton/scandalorian-scan-engine:${{ github.sha }}
           kustomize edit set image charlesdburton/scandalorian-ingest:latest=charlesdburton/scandalorian-ingest:${{ github.sha }}
+          kustomize edit set image charlesdburton/scandalorian-reversedns-engine:latest=charlesdburton/scandalorian-reversedns-engine:${{ github.sha }}
           cat kustomization.yaml
 
       - name: Commit Files

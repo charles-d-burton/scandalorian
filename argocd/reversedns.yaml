@@ -26,7 +26,7 @@ spec:
         env:
         - name: REVERSEDNS_HOST
           value: "nats-cluster.default.svc"
-        - name: REVERSEDNS_HOST_PORT
+        - name: REVERSEDNS_PORT
           value: "4222"
         name: scandalorian-reversedns
         resources:

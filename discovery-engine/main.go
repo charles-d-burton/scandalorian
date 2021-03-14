@@ -29,7 +29,7 @@ const (
 var (
 	bus          MessageBus
 	workers      int
-	chansByIface = make(map[string]chan *ScanWork)
+	chansByIface = make(map[string]chan ScanWork, 100)
 )
 
 //MessageBus Interface for making generic connections to message busses
@@ -49,7 +49,7 @@ type Scan struct {
 
 //ScanWork holds the info necessary to run a scan
 type ScanWork struct {
-	Scan *Scan
+	Scan Scan
 	GW   net.IP
 	Src  net.IP
 	Dst  net.IP
@@ -59,7 +59,7 @@ type ScanWork struct {
 type PcapWorker struct {
 	Handle  *pcap.Handle   //initialized once so we can reuse it
 	Iface   *net.Interface //The iface the worker is bound to
-	Reqs    chan *ScanWork //The work queue
+	Reqs    chan ScanWork  //The work queue
 	SrcPort layers.TCPPort
 	// opts and buf allow us to easily serialize packets in the send()
 	// method.
@@ -137,14 +137,14 @@ func main() {
 		scWork := &ScanWork{ //Create full SYN Scan work Object
 			GW:   gw,
 			Src:  src,
-			Scan: &scan,
+			Scan: scan,
 			Dst:  ip,
 		}
 		i, ok := chansByIface[iface.Name] //Get the right work queue by iface
 		if !ok {
 			log.Errorf("Interface not found: %v", iface.Name)
 		}
-		i <- scWork //Drop the wrok in the queue
+		i <- *scWork //Drop the wrok in the queue
 	}
 }
 
@@ -164,7 +164,7 @@ func createWorkerPool(workers int) error {
 			if inet, ok := addr.(*net.IPNet); ok { //Make sure we ignore loopback
 				if !inet.IP.IsLoopback() && inet.IP.To4() != nil {
 					log.Info("IFACE: ", inet.IP.String())
-					ch := make(chan *ScanWork, 100)
+					ch := make(chan ScanWork, 100)
 					chansByIface[iface.Name] = ch
 					for w := 1; w <= workers; w++ {
 						var worker PcapWorker
@@ -421,7 +421,7 @@ func (scw *ScanWork) scan(pWorker *PcapWorker) error {
 	}
 	if len(scw.Scan.Ports) > 0 {
 		log.Infof("Found open ports on host, publishing to topic: %v", enqueueTopic)
-		err := bus.Publish(enqueueTopic, scw.Scan)
+		err := bus.Publish(enqueueTopic, &scw.Scan)
 		if err != nil {
 			log.Error(err)
 		}

@@ -163,7 +163,12 @@ func handlePost(c *gin.Context) {
 
 func enQueueRequest(scanreq *ScanRequest) error {
 	id := uuid.New().String()
-
+	if len(scanreq.ScanTypes) == 0 {
+		scanreq.ScanTypes = make([]string, len(topics))
+		for key := range topics {
+			scanreq.ScanTypes = append(scanreq.ScanTypes, key)
+		}
+	}
 	for _, scanType := range scanreq.ScanTypes {
 		if topic, ok := topics[scanType]; ok {
 			addrs, err := Hosts(scanreq.Address)

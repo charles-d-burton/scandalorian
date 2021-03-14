@@ -8,11 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/examples/util"
-	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
-	"github.com/google/gopacket/routing"
+	//Using out of tree due to: https://github.com/google/gopacket/issues/698
+	"github.com/charles-d-burton/gopacket"
+	"github.com/charles-d-burton/gopacket/examples/util"
+	"github.com/charles-d-burton/gopacket/layers"
+	"github.com/charles-d-burton/gopacket/pcap"
+	"github.com/charles-d-burton/gopacket/routing"
 	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

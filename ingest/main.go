@@ -181,6 +181,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 					scan.ID = id
 					scan.IP = addr
 					scan.Topic = topic
+					log.Info("Sending to topic: ", topic)
 					err = messageBus.Publish(&scan)
 					if err != nil {
 						log.Warn(err)
@@ -193,6 +194,7 @@ func enQueueRequest(scanreq *ScanRequest) error {
 			scan.ID = id
 			scan.IP = scanreq.Address
 			scan.Topic = topic
+			log.Info("Sending to topic: ", topic)
 			err = messageBus.Publish(&scan)
 			if err != nil {
 				log.Warn(err)

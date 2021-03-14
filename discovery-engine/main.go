@@ -94,11 +94,11 @@ func main() {
 			log.Warn(err)
 		}
 	}
-	nbus, err := connectBus(v)
+	bus, err := connectBus(v)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer nbus.Close()
+	defer bus.Close()
 	defer util.Run()
 	router, err := routing.New()
 	if err != nil {
@@ -110,11 +110,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dch, err := nbus.Subscribe(dequeueTopic)
+	dch, err := bus.Subscribe(dequeueTopic)
 	if err != nil {
 		log.Fatal(err)
 	}
-	bus = nbus
 	for data := range dch { //Wait for incoming scan requests
 		log.Info(string(data))
 		var scan Scan

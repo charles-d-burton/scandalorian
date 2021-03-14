@@ -39,6 +39,7 @@ func (natsConn *NatsConn) Publish(topic string, scan *Scan) error {
 
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
 func (natsConn *NatsConn) Subscribe(topic string) (chan []byte, error) {
+	log.Infof("Listening on topic: %v", topic)
 	ch := make(chan *nats.Msg, 64)
 	sub, err := natsConn.Conn.ChanSubscribe(topic, ch)
 	if err != nil {

@@ -1,6 +1,6 @@
 module github.com/charles-d-burton/scandalorian/zonewalk
 
-go 1.15
+go 1.16
 
 require (
 	github.com/charles-d-burton/kanscan v0.0.0-20210124021001-297b966447f2

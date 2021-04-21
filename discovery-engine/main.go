@@ -7,7 +7,6 @@ import (
 	"github.com/charles-d-burton/gopacket"
 	"github.com/charles-d-burton/gopacket/layers"
 	"github.com/charles-d-burton/gopacket/pcap"
-	jsoniter "github.com/json-iterator/go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -68,7 +67,7 @@ type PcapWorker struct {
 }
 
 func main() {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(log.DebugLevel) //TODO: Remember to reset
 	v := viper.New()

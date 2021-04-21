@@ -47,6 +47,7 @@ var (
 )
 
 func main() {
+	log.Info("Starting up")
 	log.SetFormatter(&log.JSONFormatter{})
 	v := viper.New()
 	v.SetEnvPrefix("ingest")

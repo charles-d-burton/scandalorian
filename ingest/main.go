@@ -13,6 +13,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+var (
+	messageBus MessageBus
+	topics     = map[string]string{
+		"discovery":  "scan-discovery-queue",
+		"zonewalk":   "scan-zonewalk-queue",
+		"reversedns": "scan-reversedns-queue",
+	}
+)
+
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string) error
@@ -22,10 +31,11 @@ type MessageBus interface {
 
 //ScanRequest object instructing system on how to scan.
 type ScanRequest struct {
-	Address   string   `json:"address,omitempty"`
-	Host      string   `json:"host,omitempty"`
-	PPS       int      `json:"pps,omitempty"`
-	ScanTypes []string `json:"scan_types:omitempty"`
+	Address   string      `json:"address,omitempty"`
+	Host      string      `json:"host,omitempty"`
+	PPS       int         `json:"pps,omitempty"`
+	ScanTypes []string    `json:"scan_types:omitempty"`
+	Options   ScanOptions `json:"scan_options:omitempty"`
 }
 
 //Scan structure to send to message queue for scanning
@@ -37,14 +47,13 @@ type Scan struct {
 	Ports     []string `json:"ports,omitempty"`
 }
 
-var (
-	messageBus MessageBus
-	topics     = map[string]string{
-		"discovery":  "scan-discovery-queue",
-		"zonewalk":   "scan-zonewalk-queue",
-		"reversedns": "scan-reversedns-queue",
-	}
-)
+//ScanOptions optional parameters to set for a scan
+type ScanOptions struct {
+	TopTen      bool `json:"top_ten,omitempty"`
+	TopHundred  bool `json:"top_hundred,omitempty"`
+	TopThousand bool `json:"top_thousand,omitempty"`
+	FastScan    bool `json:"fast_scan,omitempty"`
+}
 
 func main() {
 	log.Info("Starting up")

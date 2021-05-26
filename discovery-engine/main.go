@@ -93,6 +93,8 @@ func main() {
 			log.Warn(err)
 		}
 	}
+	//Dummy to stop the process dying for now while I rebuild this
+	select {}
 	/*bus, err := connectBus(v)
 	if err != nil {
 		log.Fatal(err)

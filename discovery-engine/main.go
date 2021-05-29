@@ -26,6 +26,8 @@ import (
  * Pass message along to NMAP scanner engine
  * Decide if a worker pool pattern of scanning multiple IP addresses makes sense.  I suspect it does
    and the refactor I did makes that easier now
+ * Implement DecodingLayerParser for a speed gain, this thing is all about speed
+ * Consider eBPF rather than libpcap and doing it raw on the wire
 */
 
 const (

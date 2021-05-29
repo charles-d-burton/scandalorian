@@ -52,7 +52,7 @@ type ScanOptions struct {
 	TopTen      bool `json:"top_ten,omitempty"`
 	TopHundred  bool `json:"top_hundred,omitempty"`
 	TopThousand bool `json:"top_thousand,omitempty"`
-	FastScan    bool `json:"fast_scan,omitempty"`
+	PPS         int  `json:"pps,omitempty"`
 }
 
 func main() {

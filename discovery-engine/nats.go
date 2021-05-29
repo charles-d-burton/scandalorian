@@ -53,7 +53,7 @@ func (natsConn *NatsConn) Publish(topic string, scan *Scan, errChan chan error) 
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
 func (natsConn *NatsConn) Subscribe(topic string, errChan chan error) chan []byte {
 	log.Infof("Listening on topic: %v", topic)
-	ch := make(chan *nats.Msg, 64)
+	ch := make(chan *nats.Msg, 1)
 	//This might seem redundant but it allows us to have an interface that can be satisfied by other message busses e.g. Rabbit
 	sub, err := natsConn.Conn.ChanSubscribe(topic, ch)
 	if err != nil {
@@ -61,9 +61,10 @@ func (natsConn *NatsConn) Subscribe(topic string, errChan chan error) chan []byt
 		return nil
 	}
 	natsConn.Sub = sub
-	bch := make(chan []byte, 64)
+	bch := make(chan []byte, 1)
 	go func() {
 		for msg := range ch {
+			log.Debug("received message")
 			bch <- msg.Data
 		}
 	}() //Handle byte conversion to satisyf interface

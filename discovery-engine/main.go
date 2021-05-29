@@ -97,11 +97,17 @@ func main() {
 	go func() {
 		messageChan := bus.Subscribe(subscripTopic, errChan)
 		for message := range messageChan {
+			log.Debug("processing scan")
 			var scan Scan
-			json.Unmarshal(message, &scan)
-			err := scan.ProcessRequest(bus)
+			err := json.Unmarshal(message, &scan)
 			if err != nil {
 				errChan <- err
+				break
+			}
+			err = scan.ProcessRequest(bus)
+			if err != nil {
+				errChan <- err
+				break
 			}
 		}
 	}()

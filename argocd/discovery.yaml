@@ -28,6 +28,8 @@ spec:
           value: "nats-cluster.default.svc"
         - name: ENGINE_PORT
           value: "4222"
+        - name: ENGINE_LOG_LEVEL
+          value: "debug"
         name: scandalorian-discovery
         resources:
           requests:

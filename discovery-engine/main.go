@@ -77,10 +77,13 @@ func main() {
 	if !v.IsSet("log_level") {
 		log.SetLevel(log.InfoLevel)
 	} else {
-		_, err := log.ParseLevel(v.GetString("log_level"))
+		level, err := log.ParseLevel(v.GetString("log_level"))
 		if err != nil {
 			log.SetLevel(log.InfoLevel)
 			log.Warn(err)
+		} else {
+			log.Info("setting log level to debug")
+			log.SetLevel(level)
 		}
 	}
 	host := v.GetString("host")

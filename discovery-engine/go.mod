@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/google/gopacket v1.1.19
+	github.com/google/gopacket v1.1.20-0.20210429153827-3eaba0894325
 	github.com/json-iterator/go v1.1.11
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect

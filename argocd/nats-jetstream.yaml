@@ -17,9 +17,9 @@ spec:
         - name: cluster.enabled
           value: "true"
         - name: cluster.replicas
-          value: 3
+          value: "3"
         - name: nats.jetstream.enabled
-          value: true
+          value: "true"
         - name: nats.jetstream.fileStorage.storageClassName
           value: rook-ceph-block
       chart: nats

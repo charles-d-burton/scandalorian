@@ -13,7 +13,7 @@ spec:
     helm:
       parameters:
         - name: nats.image
-          value: "2.2.6-alpine3.13"
+          value: "nats:2.2.6-alpine3.13"
         - name: cluster.enabled
           value: "true"
         - name: cluster.replicas

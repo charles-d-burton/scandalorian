@@ -1,0 +1,30 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nats-jetstream
+  namespace: argocd
+spec:
+  destination:
+    namespace: scandalorian
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    helm:
+      parameters:
+        - name: nats.image
+          value: "2.2.6-alpine3.13"
+        - name: cluster.enabled
+          value: "true"
+        - name: cluster.replicas
+          value: 3
+        - name: nats.jetstream.enabled
+          value: true
+        - name: nats.jetstream.fileStorage.storageClassName
+          value: rook-ceph-block
+    chart: nats
+    repoURL: https://nats-io.github.io/k8s/helm/charts/
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

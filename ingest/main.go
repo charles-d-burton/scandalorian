@@ -52,7 +52,7 @@ type ScanOptions struct {
 	TopTen      bool `json:"top_ten,omitempty"`
 	TopHundred  bool `json:"top_hundred,omitempty"`
 	TopThousand bool `json:"top_thousand,omitempty"`
-	PPS         int  `json:"pps,omitempty"`
+	PPS         int  `json:"pps,omitempty"` //Set rate limiter value
 }
 
 func main() {

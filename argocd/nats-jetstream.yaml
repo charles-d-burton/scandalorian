@@ -24,6 +24,7 @@ spec:
           value: rook-ceph-block
     chart: nats
     repoURL: https://nats-io.github.io/k8s/helm/charts/
+    targetRevision: 0.8.0
   syncPolicy:
     automated:
       prune: true

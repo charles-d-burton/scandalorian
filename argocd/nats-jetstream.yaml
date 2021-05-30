@@ -22,8 +22,8 @@ spec:
           value: true
         - name: nats.jetstream.fileStorage.storageClassName
           value: rook-ceph-block
-    chart: nats
-    repoURL: https://nats-io.github.io/k8s/helm/charts/
+      chart: nats
+      repoURL: https://nats-io.github.io/k8s/helm/charts/
   syncPolicy:
     automated:
       prune: true

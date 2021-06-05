@@ -310,10 +310,10 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		done <- true
 	}()
 
-	for _, port := range ports {
-		go func(p string) {
+	for idx, port := range ports {
+		go func(p string, srcp int) {
 			tcp := layers.TCP{
-				SrcPort: 54321,
+				SrcPort: layers.TCPPort(3000 + srcp),
 				DstPort: 0, // will be incremented during the scan
 				SYN:     true,
 			}
@@ -373,7 +373,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 			} //else {
 			// log.Printf("ignoring useless packet")
 			//}
-		}(port)
+		}(port, idx)
 
 	}
 	close(portsChan)

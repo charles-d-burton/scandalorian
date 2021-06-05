@@ -350,13 +350,13 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		} else if tcp.DstPort != 54321 {
 			//log.Info("dst port %v does not match", tcp.DstPort)
 		} else if tcp.RST {
-			log.Info("  port %v closed", tcp.SrcPort)
+			//log.Infof("  port %v closed", tcp.SrcPort)
 		} else if tcp.SYN && tcp.ACK {
-			log.Info("  port %v open", tcp.SrcPort)
+			log.Infof("  port %v open", tcp.SrcPort)
 			discoveredPorts = append(discoveredPorts, port)
-		} else {
-			// log.Printf("ignoring useless packet")
-		}
+		} //else {
+		// log.Printf("ignoring useless packet")
+		//}
 	}
 	return discoveredPorts, nil
 }

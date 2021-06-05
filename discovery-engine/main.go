@@ -17,7 +17,6 @@ import (
 	"github.com/google/gopacket/routing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"go.uber.org/ratelimit"
 )
 
 /*
@@ -302,11 +301,11 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 	// Create the flow we expect returning packets to have, so we can check
 	// against it and discard useless packets.
 	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
-	rl := ratelimit.New(rateLimit) //TODO: stop using constant
+	//rl := ratelimit.New(rateLimit) //TODO: stop using constant
 	start := time.Now()
 	discoveredPorts := make([]string, 0)
 	for _, port := range ports {
-		start = rl.Take() //Use the rate limiter
+		start = time.Now() //Use the rate limiter
 		pint, err := strconv.Atoi(port)
 		if err != nil {
 			return nil, err

@@ -2,18 +2,25 @@ package main
 
 import (
 	"errors"
+	"fmt"
+	"math/rand"
 
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
+	"github.com/nats-io/stan.go"
 	log "github.com/sirupsen/logrus"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
+//TODO:  This needs connection handling logic added. Currently it's pretty rudimentary on failures
+
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
-	Conn *nats.Conn
-	Sub  *nats.Subscription
+	Conn     *nats.Conn
+	StanConn stan.Conn
+	//Sub      *nats.Subscription
+	Sub stan.Subscription
 }
 
 //Connect to the NATS message queue
@@ -33,6 +40,17 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 		return
 	}
 	natsConn.Conn = conn
+
+	uniqueID := rand.Intn(1000)
+
+	uniqueClient := fmt.Sprintf("discovery-engine-%d", uniqueID)
+	//TODO: Parameterize this
+	sc, err := stan.Connect("nats-streaming", uniqueClient, stan.NatsConn(conn))
+	if err != nil {
+		errChan <- err
+		return
+	}
+	natsConn.StanConn = sc
 }
 
 //Publish push messages to NATS
@@ -43,7 +61,7 @@ func (natsConn *NatsConn) Publish(topic string, scan *Scan, errChan chan error) 
 		errChan <- err
 		return
 	}
-	err = natsConn.Conn.Publish(topic, data)
+	err = natsConn.StanConn.Publish(topic, data)
 	if err != nil {
 		errChan <- err
 		return
@@ -53,27 +71,20 @@ func (natsConn *NatsConn) Publish(topic string, scan *Scan, errChan chan error) 
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
 func (natsConn *NatsConn) Subscribe(topic string, errChan chan error) chan []byte {
 	log.Infof("Listening on topic: %v", topic)
-	ch := make(chan *nats.Msg, 1)
-	//This might seem redundant but it allows us to have an interface that can be satisfied by other message busses e.g. Rabbit
-	sub, err := natsConn.Conn.ChanSubscribe(topic, ch)
+	bch := make(chan []byte, 1)
+	sub, err := natsConn.StanConn.Subscribe(topic, func(m *stan.Msg) {
+		bch <- m.Data
+	}, stan.StartWithLastReceived())
 	if err != nil {
 		errChan <- err
 		return nil
 	}
 	natsConn.Sub = sub
-	bch := make(chan []byte, 1)
-	go func() {
-		for msg := range ch {
-			log.Debug("received message")
-			bch <- msg.Data
-		}
-	}() //Handle byte conversion to satisyf interface
 	return bch
 }
 
 //Close the connection
 func (natsConn *NatsConn) Close() {
-	natsConn.Sub.Unsubscribe()
-	natsConn.Sub.Drain()
+	natsConn.StanConn.Close()
 	natsConn.Conn.Close()
 }

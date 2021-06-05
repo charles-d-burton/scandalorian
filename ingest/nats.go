@@ -20,7 +20,7 @@ type NatsConn struct {
 func (natsConn *NatsConn) Connect(host, port string) error {
 	log.Info("Connecting to NATS: ", host, ":", port)
 	nh := "nats://" + host + ":" + port
-	conn, err := nats.Connect(nh)
+	conn, err := nats.Connect(nh, nats.MaxReconnects(5))
 	if err != nil {
 		return err
 	}

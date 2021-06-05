@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
@@ -30,7 +31,13 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 
 	uniqueClient := fmt.Sprintf("ingest-%d", uniqueID)
 	//TODO: Parameterize this
-	sc, err := stan.Connect("nats-streaming", uniqueClient, stan.NatsConn(conn))
+	sc, err := stan.Connect("nats-streaming", uniqueClient,
+		stan.NatsConn(conn),
+		stan.Pings(10, 5),
+		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
+			log.Fatalf("Connection lost, reason: %v", reason)
+			os.Exit(1)
+		}))
 	if err != nil {
 		return err
 	}

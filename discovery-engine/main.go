@@ -322,6 +322,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 			continue
 		}
 
+		log.Infof("Scanning %v on port %d", s.dst, pint)
 		// Read in the next packet.
 		data, _, err := s.handle.ReadPacketData()
 		if err == pcap.NextErrorTimeoutExpired {

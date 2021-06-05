@@ -1,14 +1,19 @@
 package main
 
 import (
+	"fmt"
+	"math/rand"
+
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
+	"github.com/nats-io/stan.go"
 	log "github.com/sirupsen/logrus"
 )
 
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
-	Conn *nats.Conn
+	Conn     *nats.Conn
+	StanConn stan.Conn
 }
 
 //Connect to the NATS message queue
@@ -20,6 +25,16 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 		return err
 	}
 	natsConn.Conn = conn
+
+	uniqueID := rand.Intn(1000)
+
+	uniqueClient := fmt.Sprintf("ingest-%d", uniqueID)
+	//TODO: Parameterize this
+	sc, err := stan.Connect("nats-streaming", uniqueClient, stan.NatsConn(conn))
+	if err != nil {
+		return err
+	}
+	natsConn.StanConn = sc
 	return nil
 }
 
@@ -31,7 +46,7 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 		return err
 	}
 	log.Info("Publishing scan: ", string(data))
-	err = natsConn.Conn.Publish(scan.Topic, data)
+	err = natsConn.StanConn.Publish(scan.Topic, data)
 	return err
 }
 

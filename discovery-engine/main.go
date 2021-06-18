@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"strconv"
@@ -292,9 +293,11 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		TTL:      64,
 		Protocol: layers.IPProtocolTCP,
 	}
-
+	min := 10000
+	max := 65535
+	srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
 	tcp := layers.TCP{
-		SrcPort: layers.TCPPort(3000),
+		SrcPort: srcPort,
 		DstPort: 0, // will be incremented during the scan
 		SYN:     true,
 	}
@@ -306,16 +309,6 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 	rl := ratelimit.New(rateLimit) //TODO: stop using constant
 	start := time.Now()
 	discoveredPorts := make([]string, 0)
-	//portsChan := make(chan string, rateLimit)
-	//done := make(chan bool, 1)
-
-	//Run in the background adding ports as they're found
-	/*go func() {
-		for port := range portsChan {
-			discoveredPorts = append(discoveredPorts, port)
-		}
-		done <- true
-	}()*/
 
 	for _, port := range ports {
 
@@ -362,12 +355,12 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 			// We panic here because this is guaranteed to never
 			// happen.
 			panic("tcp layer is not tcp layer :-/")
-		} else if tcp.DstPort != 54321 {
-			//log.Info("dst port %v does not match", tcp.DstPort)
+		} else if tcp.DstPort != srcPort {
+			log.Info("dst port %v does not match", tcp.DstPort)
 		} else if tcp.RST {
 			//log.Infof("  port %v closed", tcp.SrcPort)
 		} else if tcp.SYN && tcp.ACK {
-			log.Infof("  port %v open", tcp.SrcPort)
+			log.Infof("port %v open", tcp.SrcPort)
 			discoveredPorts = append(discoveredPorts, port)
 		} //else {
 		// log.Printf("ignoring useless packet")

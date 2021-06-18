@@ -81,7 +81,7 @@ func (natsConn *NatsConn) Subscribe(topic string, errChan chan error) chan []byt
 	bch := make(chan []byte, 1)
 	sub, err := natsConn.StanConn.Subscribe(topic, func(m *stan.Msg) {
 		bch <- m.Data
-	}, stan.StartWithLastReceived())
+	}, stan.DurableName("discovery-engine"))
 	if err != nil {
 		errChan <- err
 		return nil

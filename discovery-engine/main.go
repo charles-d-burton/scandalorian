@@ -35,9 +35,9 @@ import (
 const (
 	subscripTopic = "scan-discovery-queue"
 	publishTopic  = "scan-engine-queue"
-	rateLimit     = 6000 //Upper boundary for how fast to scan a host
+	rateLimit     = 6000 //Upper boundary for how fast to scan a host TODO: convert to tunable
 	maxSamples    = 50
-	maxDuration   = 2 //Average number of seconds a scan is taking
+	maxDuration   = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
 )
 
 //MessageBus Interface for making generic connections to message busses
@@ -124,6 +124,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Debug("unkonown error")
 		os.Exit(1)
 	}
 }
@@ -211,7 +212,7 @@ func newScanner(ip net.IP, router routing.Router) (*Scanner, error) {
 		return nil, err
 	}
 	s.handle = handle
-	s.sampleRateInput = make(chan *time.Time, 50)
+	s.sampleRateInput = make(chan *time.Time, 51)
 	s.cancel = abool.New()
 	return s, nil
 }
@@ -384,6 +385,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		now := time.Now()
 		s.sampleRateInput <- &now
 	}
+	log.Debug("returning discovered ports")
 	return discoveredPorts, nil
 }
 
@@ -393,7 +395,10 @@ func (s *Scanner) calculateSlidingWindow() {
 	for sampleTime := range s.sampleRateInput {
 		diff := sampleTime.Sub(now) //difference last sample with current sample
 		now = time.Now()            //reset now so calculation is correct
-
+		if diff > 5 {
+			//Outlier, discard'
+			continue
+		}
 		//Construct circular buffer of values
 		if len(s.samples) >= maxSamples {
 			//drop value 0 off and shift left

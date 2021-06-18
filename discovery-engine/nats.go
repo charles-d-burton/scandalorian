@@ -80,6 +80,7 @@ func (natsConn *NatsConn) Subscribe(topic string, errChan chan error) chan []byt
 	log.Infof("Listening on topic: %v", topic)
 	bch := make(chan []byte, 1)
 	sub, err := natsConn.StanConn.Subscribe(topic, func(m *stan.Msg) {
+		log.Debug("message received from nats")
 		bch <- m.Data
 	}, stan.DurableName("discovery-engine"))
 	if err != nil {

@@ -212,6 +212,7 @@ func newScanner(ip net.IP, router routing.Router) (*Scanner, error) {
 	}
 	s.handle = handle
 	s.sampleRateInput = make(chan *time.Time, 50)
+	s.cancel = abool.New()
 	return s, nil
 }
 

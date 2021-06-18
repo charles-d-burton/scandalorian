@@ -407,7 +407,7 @@ func (s *Scanner) calculateSlidingWindow() {
 				total += sample.Seconds()
 			}
 			avg := total / maxSamples
-
+			log.Debugf("sample rate: %d", avg)
 			if avg > maxDuration {
 				log.Info("scan is running too slow")
 				s.cancel.Set()

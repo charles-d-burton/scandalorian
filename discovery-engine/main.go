@@ -18,6 +18,7 @@ import (
 	"github.com/google/gopacket/routing"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/tevino/abool"
 	"go.uber.org/ratelimit"
 )
 
@@ -35,6 +36,8 @@ const (
 	subscripTopic = "scan-discovery-queue"
 	publishTopic  = "scan-engine-queue"
 	rateLimit     = 6000 //Upper boundary for how fast to scan a host
+	maxSamples    = 50
+	maxDuration   = 2 //Average number of seconds a scan is taking
 )
 
 //MessageBus Interface for making generic connections to message busses
@@ -141,6 +144,7 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 	if err != nil {
 		return err
 	}
+	defer scanner.close()
 
 	if len(scan.Ports) == 0 {
 		for i := 0; i <= 65535; i++ {
@@ -172,6 +176,10 @@ type Scanner struct {
 	// method.
 	opts gopacket.SerializeOptions
 	buf  gopacket.SerializeBuffer
+
+	sampleRateInput chan *time.Time
+	samples         []*time.Duration
+	cancel          *abool.AtomicBool
 }
 
 // newScanner creates a new scanner for a given destination IP address, using
@@ -203,6 +211,7 @@ func newScanner(ip net.IP, router routing.Router) (*Scanner, error) {
 		return nil, err
 	}
 	s.handle = handle
+	s.sampleRateInput = make(chan *time.Time, 50)
 	return s, nil
 }
 
@@ -244,6 +253,7 @@ func (s *Scanner) getHwAddr() (net.HardwareAddr, error) {
 	if err := s.send(&eth, &arp); err != nil {
 		return nil, err
 	}
+
 	// Wait 3 seconds for an ARP reply.
 	for {
 		if time.Since(start) > time.Second*3 {
@@ -275,6 +285,9 @@ func (s *Scanner) send(l ...gopacket.SerializableLayer) error {
 
 // scan scans the dst IP address of this scanner.
 func (s *Scanner) scan(ports []string) ([]string, error) {
+	//Start the average calculation
+	go s.calculateSlidingWindow()
+
 	// First off, get the MAC address we should be sending packets to.
 	hwaddr, err := s.getHwAddr()
 	if err != nil {
@@ -311,7 +324,9 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 	discoveredPorts := make([]string, 0)
 
 	for _, port := range ports {
-
+		if s.cancel.IsSet() {
+			return discoveredPorts, errors.New("scan timed out")
+		}
 		start = rl.Take() //Use the rate limiter
 		pint, err := strconv.Atoi(port)
 		if err != nil {
@@ -365,6 +380,43 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		} //else {
 		// log.Printf("ignoring useless packet")
 		//}
+		now := time.Now()
+		s.sampleRateInput <- &now
 	}
 	return discoveredPorts, nil
+}
+
+//Calculate a sliding window average of scan times.  This could likely be optimized better but this will give a "true" average at the expense of computation/memory
+func (s *Scanner) calculateSlidingWindow() {
+	now := time.Now()
+	for sampleTime := range s.sampleRateInput {
+		diff := sampleTime.Sub(now) //difference last sample with current sample
+		now = time.Now()            //reset now so calculation is correct
+
+		//Construct circular buffer of values
+		if len(s.samples) >= maxSamples {
+			//drop value 0 off and shift left
+			copy(s.samples, s.samples[len(s.samples)-maxSamples+1:])
+			s.samples = s.samples[:maxSamples-1]
+		}
+		s.samples = append(s.samples, &diff)
+		if len(s.samples) == maxSamples {
+			//Buffer is full so let's calculate
+			var total float64
+			for _, sample := range s.samples {
+				total += sample.Seconds()
+			}
+			avg := total / maxSamples
+
+			if avg > maxDuration {
+				log.Info("scan is running too slow")
+				s.cancel.Set()
+			}
+		}
+		//Probably not necessary, just here for debugging if something goes wrong
+		if len(s.samples) > maxSamples {
+			log.Info("scan samples exceeded capacity")
+			s.samples = s.samples[:maxSamples]
+		}
+	}
 }

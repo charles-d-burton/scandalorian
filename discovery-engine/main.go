@@ -338,21 +338,21 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		tcp.DstPort = layers.TCPPort(pint)
 
 		if err := s.send(&eth, &ip4, &tcp); err != nil {
-			log.Printf("error sending to port %v: %v", tcp.DstPort, err)
+			log.Errorf("error sending to port %v: %v", tcp.DstPort, err)
 		}
 		// Time out 5 seconds after the last packet we sent.
 		if time.Since(start) > time.Second*5 {
-			log.Printf("timed out for %v, assuming we've seen all we can", s.dst)
+			log.Errorf("timed out for %v, assuming we've seen all we can", s.dst)
 			return nil, err
 		}
 
-		log.Infof("Scanning %v on port %d", s.dst, pint)
+		log.Debugf("Scanning %v on port %d", s.dst, pint)
 		// Read in the next packet.
 		data, _, err := s.handle.ReadPacketData()
 		if err == pcap.NextErrorTimeoutExpired {
 			return nil, err
 		} else if err != nil {
-			log.Printf("error reading packet: %v", err)
+			log.Errorf("error reading packet: %v", err)
 			return nil, err
 		}
 
@@ -363,19 +363,19 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		// Find the packets we care about, and print out logging
 		// information about them.  All others are ignored.
 		if net := packet.NetworkLayer(); net == nil {
-			log.Info("packet has no network layer")
+			log.Errorf("packet has no network layer")
 		} else if net.NetworkFlow() != ipFlow {
-			log.Info("packet does not match our ip src/dst")
+			log.Errorf("packet does not match our ip src/dst")
 		} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
-			log.Info("packet has not tcp layer")
+			log.Errorf("packet has not tcp layer")
 		} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
 			// We panic here because this is guaranteed to never
 			// happen.
 			panic("tcp layer is not tcp layer :-/")
 		} else if tcp.DstPort != srcPort {
-			log.Info("dst port %v does not match", tcp.DstPort)
+			log.Errorf("dst port %v does not match", tcp.DstPort)
 		} else if tcp.RST {
-			//log.Infof("  port %v closed", tcp.SrcPort)
+			log.Debugf("port %v closed", tcp.SrcPort)
 		} else if tcp.SYN && tcp.ACK {
 			log.Infof("port %v open", tcp.SrcPort)
 			discoveredPorts = append(discoveredPorts, port)

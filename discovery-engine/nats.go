@@ -3,12 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
-	"math/rand"
-	"os"
 
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
-	"github.com/nats-io/stan.go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,10 +15,9 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
-	Conn     *nats.Conn
-	StanConn stan.Conn
-	//Sub      *nats.Subscription
-	Sub stan.Subscription
+	Conn *nats.Conn
+	JS   nats.JetStreamContext
+	//Sub  stan.Subscription
 }
 
 //Connect to the NATS message queue
@@ -42,57 +38,67 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 	}
 	natsConn.Conn = conn
 
-	uniqueID := rand.Intn(1000)
-
-	uniqueClient := fmt.Sprintf("discovery-engine-%d", uniqueID)
-	//TODO: Parameterize this for the streaming server
-	sc, err := stan.Connect("nats-streaming", uniqueClient,
-		stan.NatsConn(conn),
-		stan.Pings(10, 5),
-		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
-			log.Fatalf("Connection lost, reason: %v", reason)
-			os.Exit(1)
-		}))
+	natsConn.JS, err = conn.JetStream()
 	if err != nil {
 		errChan <- err
 		return
 	}
-	natsConn.StanConn = sc
+
+	err = natsConn.createStream()
+
+	if err != nil {
+		errChan <- err
+	}
+	return
 }
 
 //Publish push messages to NATS
-func (natsConn *NatsConn) Publish(topic string, scan *Scan, errChan chan error) {
-	log.Infof("Publishing scan: %v to topic: %v", scan, topic)
+func (natsConn *NatsConn) Publish(scan *Scan, errChan chan error) {
+	log.Infof("Publishing scan: %v to topic: %v.%v", scan, streamName, publishContext)
 	data, err := json.Marshal(scan)
-	if err != nil {
-		errChan <- err
-		return
-	}
-	err = natsConn.StanConn.Publish(topic, data)
+	natsConn.JS.Publish(publishContext, data)
 	if err != nil {
 		errChan <- err
 		return
 	}
 }
 
+/*
+ * TODO: There's a bug here where a message needs to be acked back after a scan is finished
+ */
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
-func (natsConn *NatsConn) Subscribe(topic string, errChan chan error) chan []byte {
-	log.Infof("Listening on topic: %v", topic)
+func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
+	log.Infof("Listening on topic: %v.%v", streamName, subscripContext)
 	bch := make(chan []byte, 1)
-	sub, err := natsConn.StanConn.Subscribe(topic, func(m *stan.Msg) {
-		log.Debug("message received from nats")
+
+	natsConn.JS.Subscribe(fmt.Sprintf("%q.%q", streamName, subscripContext), func(m *nats.Msg) {
+		log.Debug("message received from Jetstream")
 		bch <- m.Data
-	}, stan.DurableName("discovery-engine"))
-	if err != nil {
-		errChan <- err
-		return nil
-	}
-	natsConn.Sub = sub
+		m.Ack() //TOOD: this right here is a bad idea, I can have to messages in flight with a probability of failure
+	})
 	return bch
 }
 
 //Close the connection
 func (natsConn *NatsConn) Close() {
-	natsConn.StanConn.Close()
 	natsConn.Conn.Close()
+}
+
+//Setup the streams
+func (natsConn *NatsConn) createStream() error {
+	stream, err := natsConn.JS.StreamInfo(streamName)
+	if err != nil {
+		log.Error(err)
+	}
+	if stream == nil {
+		log.Infof("creating stream %q and subjects %q", streamName, []string{publishContext, subscripContext})
+		_, err := natsConn.JS.AddStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: []string{publishContext, subscripContext},
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

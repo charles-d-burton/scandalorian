@@ -33,18 +33,19 @@ import (
 */
 
 const (
-	subscripTopic = "scan-discovery-queue"
-	publishTopic  = "scan-engine-queue"
-	rateLimit     = 1000 //Upper boundary for how fast to scan a host TODO: convert to tunable
-	maxSamples    = 50
-	maxDuration   = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
+	streamName      = "scandalorian"
+	subscripContext = "discovery"
+	publishContext  = "engine"
+	rateLimit       = 1000 //Upper boundary for how fast to scan a host TODO: convert to tunable
+	maxSamples      = 50
+	maxDuration     = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
 )
 
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string, errChan chan error)
-	Subscribe(topic string, errChan chan error) chan []byte
-	Publish(topic string, scan *Scan, errChan chan error)
+	Subscribe(errChan chan error) chan []byte
+	Publish(scan *Scan, errChan chan error)
 	Close()
 }
 
@@ -102,7 +103,7 @@ func main() {
 	bus.Connect(host, v.GetString("port"), errChan)
 
 	go func() {
-		messageChan := bus.Subscribe(subscripTopic, errChan)
+		messageChan := bus.Subscribe(errChan)
 		for message := range messageChan {
 			log.Debug("processing scan")
 			var scan Scan

@@ -45,18 +45,10 @@ func (natsConn *NatsConn) Publish(data []byte) error {
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println(string(data))
-	future, err := natsConn.JS.PublishAsync(publishContext, data)
+	_, err := natsConn.JS.Publish(publishContext, data)
 	if err != nil {
 		return err
 	}
-
-	//Might want to rethink this with a buffered error processor, could overload it
-	go func() {
-		err := <-future.Err()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
 	return nil
 }
 

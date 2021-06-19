@@ -57,17 +57,10 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 	if err != nil {
 		return err
 	}
-	future, err := natsConn.JS.PublishAsync(publishContext, data)
+	_, err = natsConn.JS.Publish(publishContext, data)
 	if err != nil {
 		return err
 	}
-	//Might want to rethink this with a buffered error processor, could overload it
-	go func() {
-		err := <-future.Err()
-		if err != nil {
-			log.Error(err)
-		}
-	}()
 	return nil
 }
 

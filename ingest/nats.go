@@ -51,7 +51,7 @@ func (natsConn *NatsConn) Close() {
 func (natsConn *NatsConn) createStream() error {
 	stream, err := natsConn.JS.StreamInfo(streamName)
 	if err != nil {
-		return err
+		log.Error(err)
 	}
 	if stream == nil {
 		log.Infof("creating stream %q and subjects %q", streamName, streamContexts)

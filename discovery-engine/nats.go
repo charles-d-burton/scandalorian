@@ -74,7 +74,7 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
 		log.Debug("message received from Jetstream")
 		bch <- m.Data
 		m.Ack() //TOOD: this right here is a bad idea, I can have to messages in flight with a probability of failure
-	})
+	}, nats.Durable(subscripContext), nats.ManualAck())
 	return bch
 }
 

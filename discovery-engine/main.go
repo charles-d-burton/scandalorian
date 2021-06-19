@@ -35,7 +35,7 @@ import (
 const (
 	subscripTopic = "scan-discovery-queue"
 	publishTopic  = "scan-engine-queue"
-	rateLimit     = 6000 //Upper boundary for how fast to scan a host TODO: convert to tunable
+	rateLimit     = 1000 //Upper boundary for how fast to scan a host TODO: convert to tunable
 	maxSamples    = 50
 	maxDuration   = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
 )

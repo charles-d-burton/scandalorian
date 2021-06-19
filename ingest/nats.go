@@ -50,13 +50,28 @@ func (natsConn *NatsConn) Close() {
 
 //Setup the streams
 func (natsConn *NatsConn) createStream() error {
-	log.Infof("creating stream %q and subjects %q", streamName, streamContexts)
-	_, err := natsConn.JS.AddStream(&nats.StreamConfig{
-		Name:     streamName,
-		Subjects: streamContexts,
-	})
+	stream, err := natsConn.JS.StreamInfo(streamName)
 	if err != nil {
-		return err
+		log.Error(err)
+	}
+	if stream == nil {
+		log.Infof("creating stream %q and subjects %q", streamName, streamContexts)
+		_, err := natsConn.JS.AddStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: streamContexts,
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		log.Infof("updating stream %q and subjects %q", streamName, streamContexts)
+		_, err := natsConn.JS.UpdateStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: streamContexts,
+		})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

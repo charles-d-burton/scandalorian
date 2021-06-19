@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: ENGINE_HOST
-          value: "nats-cluster.default.svc"
+          value: "nats.default.svc"
         - name: ENGINE_PORT
           value: "4222"
         - name: ENGINE_LOG_LEVEL

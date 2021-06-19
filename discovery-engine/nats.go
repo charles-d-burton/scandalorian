@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
@@ -71,7 +70,7 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
 	log.Infof("Listening on topic: %v.%v", streamName, subscripContext)
 	bch := make(chan []byte, 1)
 
-	natsConn.JS.Subscribe(fmt.Sprintf("%q.%q", streamName, subscripContext), func(m *nats.Msg) {
+	natsConn.JS.Subscribe(subscripContext, func(m *nats.Msg) {
 		log.Debug("message received from Jetstream")
 		bch <- m.Data
 		m.Ack() //TOOD: this right here is a bad idea, I can have to messages in flight with a probability of failure

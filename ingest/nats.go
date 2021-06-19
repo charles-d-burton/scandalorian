@@ -38,7 +38,8 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 		return err
 	}
 	log.Info("Publishing scan: ", string(data))
-	_, err = natsConn.JS.Publish(scan.Subject, data)
+	msg, err := natsConn.JS.Publish(scan.Subject, data)
+	log.Debugf("published to %q", msg.Stream)
 	return err
 }
 

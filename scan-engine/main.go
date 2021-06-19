@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	dequeueTopic = "scan-engine-queue"
-	enqueueTopic = "collector-scan-queue"
+	streamName      = "scandalorian"
+	subscripContext = "engine"
+	publishContext  = "collector"
 )
 
 var (
@@ -23,17 +24,25 @@ var (
 type MessageBus interface {
 	Connect(host, port string) error
 	Publish(data []byte) error
-	Subscribe(topic string) (chan []byte, error)
+	Subscribe() (chan []byte, error)
 	Close()
 }
 
 //Scan structure to send to message queue for scanning
 type Scan struct {
-	IP        string   `json:"ip"`
-	ScanID    string   `json:"scan_id"`
-	RequestID string   `json:"request_id"`
-	Topic     string   `json:"-"`
-	Ports     []string `json:"ports,omitempty"`
+	IP        string      `json:"ip"`
+	ScanID    string      `json:"scan_id"`
+	RequestID string      `json:"request_id"`
+	Ports     []string    `json:"ports,omitempty"`
+	Options   ScanOptions `json:"scan_options:omitempty"`
+}
+
+//ScanOptions optional parameters to set for a scan
+type ScanOptions struct {
+	TopTen      bool `json:"top_ten,omitempty"`
+	TopHundred  bool `json:"top_hundred,omitempty"`
+	TopThousand bool `json:"top_thousand,omitempty"`
+	PPS         int  `json:"pps,omitempty"`
 }
 
 //NMAPWorker Object to run scans
@@ -57,8 +66,19 @@ func main() {
 			workers = 5
 		}
 	}
-	//args["vulscanoutput"] = "'{id} | {product} | {version},'"
-	//args["vulscanoutput"] = `'<id>{id}</id><product>{product}</product><version>{version}</version>'`
+
+	if !v.IsSet("log_level") {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		level, err := log.ParseLevel(v.GetString("log_level"))
+		if err != nil {
+			log.SetLevel(log.InfoLevel)
+			log.Warn(err)
+		} else {
+			log.Info("setting log level to debug")
+			log.SetLevel(level)
+		}
+	}
 	bus, err := connectBus(v)
 	if err != nil {
 		log.Fatal(err)
@@ -69,7 +89,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	dch, err := bus.Subscribe(dequeueTopic)
+	dch, err := bus.Subscribe()
 	if err != nil {
 		log.Fatal(err)
 	}

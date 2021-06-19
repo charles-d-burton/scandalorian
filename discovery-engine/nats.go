@@ -48,18 +48,27 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 	if err != nil {
 		errChan <- err
 	}
-	return
 }
 
 //Publish push messages to NATS
-func (natsConn *NatsConn) Publish(scan *Scan, errChan chan error) {
+func (natsConn *NatsConn) Publish(scan *Scan) error {
 	log.Infof("Publishing scan: %v to topic: %v.%v", scan, streamName, publishContext)
 	data, err := json.Marshal(scan)
-	natsConn.JS.Publish(publishContext, data)
 	if err != nil {
-		errChan <- err
-		return
+		return err
 	}
+	future, err := natsConn.JS.PublishAsync(publishContext, data)
+	if err != nil {
+		return err
+	}
+	//Might want to rethink this with a buffered error processor, could overload it
+	go func() {
+		err := <-future.Err()
+		if err != nil {
+			log.Error(err)
+		}
+	}()
+	return nil
 }
 
 /*

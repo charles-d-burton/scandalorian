@@ -45,7 +45,7 @@ const (
 type MessageBus interface {
 	Connect(host, port string, errChan chan error)
 	Subscribe(errChan chan error) chan []byte
-	Publish(scan *Scan, errChan chan error)
+	Publish(scan *Scan) error
 	Close()
 }
 
@@ -54,7 +54,6 @@ type Scan struct {
 	IP        string      `json:"ip"`
 	ScanID    string      `json:"scan_id"`
 	RequestID string      `json:"request_id"`
-	Topic     string      `json:"-"`
 	Ports     []string    `json:"ports,omitempty"`
 	Options   ScanOptions `json:"scan_options:omitempty"`
 }
@@ -161,8 +160,8 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 		log.Info("no open ports")
 		return nil
 	}
-	//TODO:  build the message to pass along the bus
-	return nil
+	scan.Ports = discoveredPorts
+	return bus.Publish(scan)
 }
 
 // scanner handles scanning a single IP address.

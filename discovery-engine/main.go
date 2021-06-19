@@ -396,7 +396,7 @@ func (s *Scanner) calculateSlidingWindow() {
 		diff := sampleTime.Sub(now) //difference last sample with current sample
 		now = time.Now()            //reset now so calculation is correct
 		if diff > 5 {
-			//Outlier, discard'
+			//Outlier, discard
 			continue
 		}
 		//Construct circular buffer of values

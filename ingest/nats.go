@@ -1,20 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"math/rand"
-	"os"
-
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
-	"github.com/nats-io/stan.go"
 	log "github.com/sirupsen/logrus"
 )
 
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
-	Conn     *nats.Conn
-	StanConn stan.Conn
+	Conn *nats.Conn
+	JS   nats.JetStreamContext
 }
 
 //Connect to the NATS message queue
@@ -27,22 +22,12 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 	}
 	natsConn.Conn = conn
 
-	uniqueID := rand.Intn(1000)
-
-	uniqueClient := fmt.Sprintf("ingest-%d", uniqueID)
-	//TODO: Parameterize this
-	sc, err := stan.Connect("nats-streaming", uniqueClient,
-		stan.NatsConn(conn),
-		stan.Pings(10, 5),
-		stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
-			log.Fatalf("Connection lost, reason: %v", reason)
-			os.Exit(1)
-		}))
+	natsConn.JS, err = conn.JetStream()
 	if err != nil {
 		return err
 	}
-	natsConn.StanConn = sc
-	return nil
+
+	return natsConn.createStream()
 }
 
 //Publish push messages to NATS
@@ -53,11 +38,30 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 		return err
 	}
 	log.Info("Publishing scan: ", string(data))
-	err = natsConn.StanConn.Publish(scan.Topic, data)
+	_, err = natsConn.JS.Publish(scan.Subject, data)
 	return err
 }
 
 //Close the connection
 func (natsConn *NatsConn) Close() {
 	natsConn.Conn.Close()
+}
+
+//Setup the streams
+func (natsConn *NatsConn) createStream() error {
+	stream, err := natsConn.JS.StreamInfo(streamName)
+	if err != nil {
+		return err
+	}
+	if stream == nil {
+		log.Infof("creating stream %q and subjects %q", streamName, streamContexts)
+		_, err := natsConn.JS.AddStream(&nats.StreamConfig{
+			Name:     streamName,
+			Subjects: streamContexts,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

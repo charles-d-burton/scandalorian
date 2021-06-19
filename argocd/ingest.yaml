@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: INGEST_HOST
-          value: "nats-cluster.default.svc"
+          value: "nats.default.svc"
         - name: INGEST_PORT
           value: "4222"
         name: scandalorian-ingest

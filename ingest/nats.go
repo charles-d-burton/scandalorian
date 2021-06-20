@@ -10,6 +10,7 @@ import (
 type NatsConn struct {
 	Conn *nats.Conn
 	JS   nats.JetStreamContext
+	JSM  nats.JetStreamManager
 }
 
 //Connect to the NATS message queue
@@ -27,6 +28,7 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 		return err
 	}
 
+	jatsConn.JSM, err = conn.JetStream.JetStreamManager
 	return natsConn.createStream()
 }
 
@@ -54,21 +56,19 @@ func (natsConn *NatsConn) createStream() error {
 	if err != nil {
 		log.Error(err)
 	}
+	natsConfig := &nats.StreamConfig{
+		Name:     streamName,
+		Subjects: streamContexts,
+	}
 	if stream == nil {
 		log.Infof("creating stream %q and subjects %q", streamName, streamContexts)
-		_, err := natsConn.JS.AddStream(&nats.StreamConfig{
-			Name:     streamName,
-			Subjects: streamContexts,
-		})
+		_, err := natsConn.JS.AddStream(natsConfig)
 		if err != nil {
 			return err
 		}
 	} else {
 		log.Infof("updating stream %q and subjects %q", streamName, streamContexts)
-		_, err := natsConn.JS.UpdateStream(&nats.StreamConfig{
-			Name:     streamName,
-			Subjects: streamContexts,
-		})
+		_, err := natsConn.JS.UpdateStream(natsConfig)
 		if err != nil {
 			return err
 		}

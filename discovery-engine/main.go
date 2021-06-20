@@ -33,12 +33,12 @@ import (
 */
 
 const (
-	streamName      = "scandalorian"
-	subscripContext = "discovery"
-	publishContext  = "engine"
-	rateLimit       = 1000 //Upper boundary for how fast to scan a host TODO: convert to tunable
-	maxSamples      = 50
-	maxDuration     = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
+	durableName  = "discover"
+	subscription = "scandalorian.discovery"
+	publish      = "scandalorian.engine"
+	rateLimit    = 1000 //Upper boundary for how fast to scan a host TODO: convert to tunable
+	maxSamples   = 50
+	maxDuration  = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
 )
 
 //MessageBus Interface for making generic connections to message busses

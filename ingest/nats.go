@@ -38,7 +38,7 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 		return err
 	}
 	log.Info("Publishing scan: ", string(data))
-	msg, err := natsConn.JS.Publish(scan.Subject, data)
+	msg, err := natsConn.JS.Publish(streamName+"."+scan.Subject, data)
 	log.Debugf("published to %q", msg.Stream)
 	return err
 }
@@ -56,7 +56,7 @@ func (natsConn *NatsConn) createStream() error {
 	}
 	natsConfig := &nats.StreamConfig{
 		Name:     streamName,
-		Subjects: streamContexts,
+		Subjects: []string{streamName + ".*"},
 	}
 	if stream == nil {
 		log.Infof("creating stream %q and subjects %q", streamName, streamContexts)

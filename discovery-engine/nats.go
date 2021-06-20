@@ -52,12 +52,12 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 
 //Publish push messages to NATS
 func (natsConn *NatsConn) Publish(scan *Scan) error {
-	log.Infof("Publishing scan: %v to topic: %v.%v", scan, streamName, publishContext)
+	log.Infof("Publishing scan: %v to topic: %v", scan, publish)
 	data, err := json.Marshal(scan)
 	if err != nil {
 		return err
 	}
-	_, err = natsConn.JS.Publish(publishContext, data)
+	_, err = natsConn.JS.Publish(publish, data)
 	if err != nil {
 		return err
 	}
@@ -69,46 +69,18 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
  */
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
 func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
-	log.Infof("Listening on topic: %v.%v", streamName, subscripContext)
+	log.Infof("Listening on topic: %v", subscription)
 	bch := make(chan []byte, 1)
 
-	natsConn.JS.Subscribe(subscripContext, func(m *nats.Msg) {
+	natsConn.JS.Subscribe(subscription, func(m *nats.Msg) {
 		log.Debug("message received from Jetstream")
 		bch <- m.Data
 		m.Ack() //TOOD: this right here is a bad idea, I can have to messages in flight with a probability of failure
-	}, nats.Durable(subscripContext), nats.ManualAck())
+	}, nats.Durable(durableName), nats.ManualAck())
 	return bch
 }
 
 //Close the connection
 func (natsConn *NatsConn) Close() {
 	natsConn.Conn.Close()
-}
-
-//Setup the streams
-func (natsConn *NatsConn) createStream() error {
-
-	stream, err := natsConn.JS.StreamInfo(streamName)
-	if err != nil {
-		log.Error(err)
-	}
-	natsConfig := &nats.StreamConfig{
-		Name:     streamName,
-		Subjects: []string{publishContext, subscripContext},
-	}
-	if stream == nil {
-		log.Infof("creating stream %q and subjects %q", streamName, []string{publishContext, subscripContext})
-		_, err := natsConn.JS.AddStream(natsConfig)
-		if err != nil {
-			return err
-		}
-	} else {
-		log.Infof("updating stream %q and subjects %q", streamName, []string{publishContext, subscripContext})
-		_, err := natsConn.JS.UpdateStream(natsConfig)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	streamName      = "scandalorian"
-	subscripContext = "engine"
-	publishContext  = "collector"
+	durableName  = "engine"
+	subscription = "scandalorian.engine"
+	publish      = "scandalorian.collector"
 )
 
 var (

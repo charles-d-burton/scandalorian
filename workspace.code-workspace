@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "collector"
+		},
+		{
+			"path": "zonewalk"
+		},
+		{
+			"path": "scan-engine"
+		},
+		{
+			"path": "reversedns"
+		},
+		{
+			"path": "ingest"
+		},
+		{
+			"path": "discovery-engine"
+		},
+		{
+			"path": "argocd"
+		}
+	],
+	"settings": {}
+}

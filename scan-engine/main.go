@@ -36,7 +36,7 @@ type Scan struct {
 	ScanID    string      `json:"scan_id"`
 	RequestID string      `json:"request_id"`
 	Ports     []string    `json:"ports,omitempty"`
-	Options   ScanOptions `json:"scan_options:omitempty"`
+	Options   ScanOptions `json:"scan_options,omitempty"`
 }
 
 //ScanOptions optional parameters to set for a scan

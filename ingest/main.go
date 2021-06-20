@@ -40,8 +40,8 @@ type ScanRequest struct {
 	Address   string      `json:"address,omitempty"`
 	Host      string      `json:"host,omitempty"`
 	PPS       int         `json:"pps,omitempty"`
-	ScanTypes []string    `json:"scan_types:omitempty"`
-	Options   ScanOptions `json:"scan_options:omitempty"`
+	ScanTypes []string    `json:"scan_types,omitempty"`
+	Options   ScanOptions `json:"scan_options,omitempty"`
 }
 
 //Scan structure to send to message queue for scanning

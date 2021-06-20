@@ -2,49 +2,48 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
 
+//TODO:  This needs connection handling logic added. Currently it's pretty rudimentary on failures
+
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
 	Conn *nats.Conn
 	JS   nats.JetStreamContext
+	//Sub  stan.Subscription
 }
 
 //Connect to the NATS message queue
-func (natsConn *NatsConn) Connect(host, port string) error {
+func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 	log.Info("Connecting to NATS: ", host, ":", port)
 	nh := "nats://" + host + ":" + port
 	conn, err := nats.Connect(nh,
 		nats.DisconnectErrHandler(func(_ *nats.Conn, err error) {
-			log.Fatal(err)
-			os.Exit(1)
+			errChan <- err
 		}),
 		nats.DisconnectHandler(func(_ *nats.Conn) {
-			log.Fatal(errors.New("unexpectedly disconnected from nats"))
-			os.Exit(1)
-		}))
+			errChan <- errors.New("unexpectedly disconnected from nats")
+		}),
+	)
 	if err != nil {
-		return err
+		errChan <- err
+		return
 	}
 	natsConn.Conn = conn
 
 	natsConn.JS, err = conn.JetStream()
 	if err != nil {
-		return err
+		errChan <- err
+		return
 	}
-	return nil
 }
 
 //Publish push messages to NATS
 func (natsConn *NatsConn) Publish(data []byte) error {
-	fmt.Println("")
-	fmt.Println("")
-	fmt.Println(string(data))
+	log.Debugf("Publishing scan: %v to topic: %v.%v", string(data), streamName, publishContext)
 	_, err := natsConn.JS.Publish(publishContext, data)
 	if err != nil {
 		return err
@@ -52,16 +51,20 @@ func (natsConn *NatsConn) Publish(data []byte) error {
 	return nil
 }
 
+/*
+ * TODO: There's a bug here where a message needs to be acked back after a scan is finished
+ */
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
-func (natsConn *NatsConn) Subscribe() (chan []byte, error) {
-	bch := make(chan []byte, 10)
+func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
 	log.Infof("Listening on topic: %v.%v", streamName, subscripContext)
+	bch := make(chan []byte, 1)
+
 	natsConn.JS.Subscribe(subscripContext, func(m *nats.Msg) {
 		log.Debug("message received from Jetstream")
 		bch <- m.Data
-		m.Ack()
+		m.Ack() //TOOD: this right here is a bad idea, I can have to messages in flight with a probability of failure
 	}, nats.Durable(subscripContext), nats.ManualAck())
-	return bch, nil
+	return bch
 }
 
 //Close the connection
@@ -71,6 +74,7 @@ func (natsConn *NatsConn) Close() {
 
 //Setup the streams
 func (natsConn *NatsConn) createStream() error {
+
 	stream, err := natsConn.JS.StreamInfo(streamName)
 	if err != nil {
 		log.Error(err)

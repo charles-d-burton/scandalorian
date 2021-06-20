@@ -28,6 +28,8 @@ spec:
           value: "nats.default.svc"
         - name: ENGINE_PORT
           value: "4222"
+        - name: ENGINE_LOG_LEVEL
+          value: "debug"
         name: scandalorian-scan
         resources:
           requests:

@@ -124,7 +124,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Debug("unkonown error")
+		log.Error("unkonown error")
 		os.Exit(1)
 	}
 }
@@ -378,7 +378,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 			log.Debugf("port %v closed", tcp.SrcPort)
 		} else if tcp.SYN && tcp.ACK {
 			log.Infof("port %v open", tcp.SrcPort)
-			discoveredPorts = append(discoveredPorts, port)
+			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
 		} //else {
 		// log.Printf("ignoring useless packet")
 		//}

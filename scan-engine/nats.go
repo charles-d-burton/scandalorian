@@ -13,7 +13,6 @@ import (
 type NatsConn struct {
 	Conn *nats.Conn
 	JS   nats.JetStreamContext
-	//Sub  stan.Subscription
 }
 
 //Connect to the NATS message queue
@@ -54,7 +53,7 @@ func (natsConn *NatsConn) Publish(data []byte) error {
 /*
  * TODO: There's a bug here where a message needs to be acked back after a scan is finished
  */
-//Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
+//Subscribe subscribe to a topic in NATS
 func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
 	log.Infof("Listening on topic: %v", subscription)
 	bch := make(chan []byte, 1)

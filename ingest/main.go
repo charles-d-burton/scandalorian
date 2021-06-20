@@ -23,8 +23,6 @@ var (
 		"discovery",
 		"zonewalk",
 		"reversedns",
-		"engine",
-		"collector",
 	}
 )
 

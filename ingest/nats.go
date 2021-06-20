@@ -10,7 +10,6 @@ import (
 type NatsConn struct {
 	Conn *nats.Conn
 	JS   nats.JetStreamContext
-	JSM  nats.JetStreamManager
 }
 
 //Connect to the NATS message queue
@@ -28,7 +27,6 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 		return err
 	}
 
-	jatsConn.JSM, err = conn.JetStream.JetStreamManager
 	return natsConn.createStream()
 }
 

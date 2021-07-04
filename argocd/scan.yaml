@@ -5,7 +5,7 @@ metadata:
   namespace: scandalorian
 spec:
   progressDeadlineSeconds: 600
-  replicas: 3
+  replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:

@@ -143,7 +143,9 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 	results := make(chan []string)
 	errs := make(chan error)
 	for _, chunk := range chunks {
+		wg.Add(1)
 		go func(pchunk []string) {
+			defer wg.Done()
 			router, err := routing.New()
 			if err != nil {
 				errs <- err
@@ -164,14 +166,11 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 			}
 			defer scanner.close()
 
-			wg.Add(1)
-			discoveredPorts, err := scanner.scan(pchunk, &wg)
+			discoveredPorts, err := scanner.scan(pchunk)
 			if err != nil {
 				errs <- err
 			}
 			if len(discoveredPorts) == 0 {
-				log.Info("no open ports")
-				errs <- fmt.Errorf("no open ports found")
 				return
 			}
 			results <- discoveredPorts
@@ -189,7 +188,10 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 	for ports := range results {
 		discoveredPorts = append(discoveredPorts, ports...)
 	}
-
+	if len(discoveredPorts) == 0 {
+		log.Infof("Not open ports found for request %s", scan.RequestID)
+		errStrings = append(errStrings, "no open ports found")
+	}
 	scan.Errors = errStrings
 	scan.Ports = discoveredPorts
 
@@ -319,8 +321,7 @@ func (s *Scanner) send(l ...gopacket.SerializableLayer) error {
 
 // this code is fugly, I need to make it more readable
 // scan scans the dst IP address of this scanner.
-func (s *Scanner) scan(ports []string, wg *sync.WaitGroup) ([]string, error) {
-	defer wg.Done()
+func (s *Scanner) scan(ports []string) ([]string, error) {
 	//Start the average calculation
 	go s.calculateSlidingWindow()
 	discoveredPorts := make([]string, 0)

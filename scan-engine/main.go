@@ -11,9 +11,10 @@ import (
 )
 
 const (
+	streamName   = "scan-engine"
 	durableName  = "engine"
-	subscription = "scandalorian.engine"
-	publish      = "scandalorian.collector"
+	subscription = "scan-engine.scans"
+	publish      = "scan-collector.scan-results"
 )
 
 var (

@@ -38,6 +38,11 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 		errChan <- err
 		return
 	}
+	err = natsConn.createStream()
+	if err != nil {
+		errChan <- err
+		return
+	}
 }
 
 //Publish push messages to NATS
@@ -68,5 +73,25 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
 
 //Close the connection
 func (natsConn *NatsConn) Close() {
-	natsConn.Conn.Close()
+	natsConn.Conn.Drain()
+}
+
+//Setup the streams
+func (natsConn *NatsConn) createStream() error {
+	stream, err := natsConn.JS.StreamInfo(streamName)
+	if err != nil {
+		log.Error(err)
+	}
+	natsConfig := &nats.StreamConfig{
+		Name:     streamName,
+		Subjects: []string{subscription},
+	}
+	if stream == nil {
+		log.Infof("creating stream %s", subscription)
+		_, err := natsConn.JS.AddStream(natsConfig)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

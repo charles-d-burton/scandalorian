@@ -13,16 +13,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	streamName = "scandalorian"
-)
-
 var (
-	messageBus     MessageBus
-	streamContexts = []string{
-		"discovery",
-		"zonewalk",
-		"reversedns",
+	messageBus MessageBus
+	streams    = map[string]string{
+		"discovery":  "discovery.requests",
+		"zonewalk":   "zonewalk.requests",
+		"reversedns": "reversedns.reqeusts",
 	}
 )
 
@@ -35,9 +31,10 @@ type MessageBus interface {
 
 //ScanRequest object instructing system on how to scan.
 type ScanRequest struct {
-	Address   string      `json:"address,omitempty"`
-	Host      string      `json:"host,omitempty"`
-	PPS       int         `json:"pps,omitempty"`
+	Address string `json:"address,omitempty"`
+	Host    string `json:"host,omitempty"`
+	PPS     int    `json:"pps,omitempty"`
+
 	ScanTypes []string    `json:"scan_types,omitempty"`
 	Options   ScanOptions `json:"scan_options,omitempty"`
 }
@@ -47,8 +44,8 @@ type Scan struct {
 	IP        string   `json:"ip"`
 	ScanID    string   `json:"scan_id"`
 	RequestID string   `json:"request_id"`
-	Subject   string   `json:"-"`
 	Ports     []string `json:"ports,omitempty"`
+	Stream    string   `json:"-"`
 }
 
 //ScanOptions optional parameters to set for a scan
@@ -179,42 +176,47 @@ func handlePost(c *gin.Context) {
 func enQueueRequest(scanreq *ScanRequest) error {
 	id := uuid.New().String()
 	if len(scanreq.ScanTypes) == 0 {
-		scanreq.ScanTypes = streamContexts //TODO:  Do I want to scan everything by default?
+		keys := make([]string, len(streams))
+		i := 0
+		for k := range streams {
+			keys[i] = k
+			i++
+		}
+		scanreq.ScanTypes = keys //TODO:  Do I want to scan everything by default?
 	}
 	for _, scanType := range scanreq.ScanTypes {
-		if subjectInlist(scanType) {
-			addrs, err := Hosts(scanreq.Address)
-			if err != nil {
-				return err
-			}
-			if len(addrs) > 0 { //Generate lots of scan objects as we're scanning a subnet
-				for _, addr := range addrs {
-					var scan Scan
-					scan.RequestID = id
-					scan.ScanID = uuid.New().String()
-					scan.IP = addr
-					scan.Subject = scanType
-					log.Infof("Sending to topic: %s.%s", streamName, scanType)
-					err = messageBus.Publish(&scan)
-					if err != nil {
-						log.Warn(err)
-						return err
-					}
-				}
-				return nil
-			}
-			var scan Scan
-			scan.RequestID = id
-			scan.ScanID = uuid.New().String()
-			scan.IP = scanreq.Address
-			scan.Subject = scanType
-			log.Infof("Sending to topic: %s.%s", streamName, scanType)
-			err = messageBus.Publish(&scan)
-			if err != nil {
-				log.Warn(err)
-				return err
-			}
+		addrs, err := Hosts(scanreq.Address)
+		if err != nil {
+			return err
 		}
+		if len(addrs) > 0 { //Generate lots of scan objects as we're scanning a subnet
+			for _, addr := range addrs {
+				var scan Scan
+				scan.RequestID = id
+				scan.ScanID = uuid.New().String()
+				scan.IP = addr
+				scan.Stream = streams[scanType]
+				log.Infof("Sending to topic: %s", scan.Stream)
+				err = messageBus.Publish(&scan)
+				if err != nil {
+					log.Warn(err)
+					return err
+				}
+			}
+			return nil
+		}
+		var scan Scan
+		scan.RequestID = id
+		scan.ScanID = uuid.New().String()
+		scan.IP = scanreq.Address
+		scan.Stream = streams[scanType]
+		log.Infof("Sending to topic: %s", scan.Stream)
+		err = messageBus.Publish(&scan)
+		if err != nil {
+			log.Warn(err)
+			return err
+		}
+
 	}
 	return nil
 }
@@ -249,13 +251,4 @@ func inc(ip net.IP) {
 			break
 		}
 	}
-}
-
-func subjectInlist(subject string) bool {
-	for _, value := range streamContexts {
-		if subject == value {
-			return true
-		}
-	}
-	return false
 }

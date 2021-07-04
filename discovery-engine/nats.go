@@ -16,7 +16,6 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 type NatsConn struct {
 	Conn *nats.Conn
 	JS   nats.JetStreamContext
-	//Sub  stan.Subscription
 }
 
 //Connect to the NATS message queue
@@ -43,11 +42,11 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 		return
 	}
 
-	/*err = natsConn.createStream()
+	err = natsConn.createStream()
 
 	if err != nil {
 		errChan <- err
-	}*/
+	}
 }
 
 //Publish push messages to NATS
@@ -83,4 +82,24 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
 //Close the connection
 func (natsConn *NatsConn) Close() {
 	natsConn.Conn.Close()
+}
+
+//Setup the streams
+func (natsConn *NatsConn) createStream() error {
+	stream, err := natsConn.JS.StreamInfo(streamName)
+	if err != nil {
+		log.Error(err)
+	}
+	natsConfig := &nats.StreamConfig{
+		Name:     streamName,
+		Subjects: []string{subscription},
+	}
+	if stream == nil {
+		log.Infof("creating stream %s", subscription)
+		_, err := natsConn.JS.AddStream(natsConfig)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

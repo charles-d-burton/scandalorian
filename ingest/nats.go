@@ -26,8 +26,7 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 	if err != nil {
 		return err
 	}
-
-	return natsConn.createStream()
+	return nil
 }
 
 //Publish push messages to NATS
@@ -38,7 +37,7 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 		return err
 	}
 	log.Info("Publishing scan: ", string(data))
-	msg, err := natsConn.JS.Publish(streamName+"."+scan.Subject, data)
+	msg, err := natsConn.JS.Publish(scan.Stream, data)
 	log.Debugf("published to %q", msg.Stream)
 	return err
 }
@@ -46,30 +45,4 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 //Close the connection
 func (natsConn *NatsConn) Close() {
 	natsConn.Conn.Close()
-}
-
-//Setup the streams
-func (natsConn *NatsConn) createStream() error {
-	stream, err := natsConn.JS.StreamInfo(streamName)
-	if err != nil {
-		log.Error(err)
-	}
-	natsConfig := &nats.StreamConfig{
-		Name:     streamName,
-		Subjects: []string{streamName + ".*"},
-	}
-	if stream == nil {
-		log.Infof("creating stream %q and subjects %q", streamName, streamContexts)
-		_, err := natsConn.JS.AddStream(natsConfig)
-		if err != nil {
-			return err
-		}
-	} else {
-		log.Infof("updating stream %q and subjects %q", streamName, streamContexts)
-		_, err := natsConn.JS.UpdateStream(natsConfig)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

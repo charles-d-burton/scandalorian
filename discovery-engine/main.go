@@ -33,9 +33,10 @@ import (
 */
 
 const (
-	durableName  = "discover"
-	subscription = "scandalorian.discovery"
-	publish      = "scandalorian.engine"
+	streamName   = "discovery"
+	durableName  = "discovery"
+	subscription = "discovery.requests"
+	publish      = "scan-engine.scans"
 	rateLimit    = 1000 //Upper boundary for how fast to scan a host TODO: convert to tunable
 	maxSamples   = 50
 	maxDuration  = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable

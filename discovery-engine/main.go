@@ -143,7 +143,7 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 	results := make(chan []string)
 	errs := make(chan error)
 	for _, chunk := range chunks {
-		go func() {
+		go func(pchunk []string) {
 			router, err := routing.New()
 			if err != nil {
 				errs <- err
@@ -165,7 +165,7 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 			defer scanner.close()
 
 			wg.Add(1)
-			discoveredPorts, err := scanner.scan(chunk, &wg)
+			discoveredPorts, err := scanner.scan(pchunk, &wg)
 			if err != nil {
 				errs <- err
 			}
@@ -175,7 +175,7 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 				return
 			}
 			results <- discoveredPorts
-		}()
+		}(chunk)
 	}
 	wg.Wait()
 	close(results)

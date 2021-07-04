@@ -36,10 +36,15 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
 	if err != nil {
 		return err
 	}
-	log.Info("Publishing scan: ", string(data))
+	log.Infof("Publishing scan: %s", string(data))
+	log.Info("To stream: %s", scan.Stream)
 	msg, err := natsConn.JS.Publish(scan.Stream, data)
+	if err != nil {
+		log.Debug(err)
+		return err
+	}
 	log.Debugf("published to %q", msg.Stream)
-	return err
+	return nil
 }
 
 //Close the connection

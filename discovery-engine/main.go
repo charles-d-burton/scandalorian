@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	//Using out of tree due to: https://github.com/google/gopacket/issues/698
@@ -57,6 +58,7 @@ type Scan struct {
 	RequestID string      `json:"request_id"`
 	Ports     []string    `json:"ports,omitempty"`
 	Options   ScanOptions `json:"scan_options,omitempty"`
+	Errors    []string    `json:"errors,omitempty"`
 }
 
 //ScanOptions optional parameters to set for a scan
@@ -153,14 +155,19 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 			scan.Ports = append(scan.Ports, strconv.Itoa(i))
 		}
 	}
-	discoveredPorts, err := scanner.scan(scan.Ports)
-	if err != nil {
-		return err
+	errStrings := make([]string, 0)
+	discoveredPorts, errs := scanner.scan(scan.Ports)
+	for _, scanError := range errs {
+		errStrings = append(errStrings, scanError.Error())
 	}
 	if len(discoveredPorts) == 0 {
 		log.Info("no open ports")
-		return nil
+		errStrings = append(errStrings, fmt.Errorf("no open ports found").Error())
 	}
+	if len(errStrings) > 0 {
+		scan.Errors = errStrings
+	}
+
 	scan.Ports = discoveredPorts
 	return bus.Publish(scan)
 }
@@ -286,108 +293,137 @@ func (s *Scanner) send(l ...gopacket.SerializableLayer) error {
 	return s.handle.WritePacketData(s.buf.Bytes())
 }
 
+// this code is fugly, I need to make it more readable
 // scan scans the dst IP address of this scanner.
-func (s *Scanner) scan(ports []string) ([]string, error) {
+func (s *Scanner) scan(ports []string) ([]string, []error) {
 	//Start the average calculation
 	go s.calculateSlidingWindow()
 
-	// First off, get the MAC address we should be sending packets to.
-	hwaddr, err := s.getHwAddr()
-	if err != nil {
-		return nil, err
-	}
-	// Construct all the network layers we need.
-	eth := layers.Ethernet{
-		SrcMAC:       s.iface.HardwareAddr,
-		DstMAC:       hwaddr,
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-	ip4 := layers.IPv4{
-		SrcIP:    s.src,
-		DstIP:    s.dst,
-		Version:  4,
-		TTL:      64,
-		Protocol: layers.IPProtocolTCP,
-	}
-	min := 10000
-	max := 65535
-	srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
-	tcp := layers.TCP{
-		SrcPort: srcPort,
-		DstPort: 0, // will be incremented during the scan
-		SYN:     true,
-	}
-	tcp.SetNetworkLayerForChecksum(&ip4)
+	chunks := divPorts(ports)
+	results := make(chan []string)
+	errs := make(chan error)
 
-	// Create the flow we expect returning packets to have, so we can check
-	// against it and discard useless packets.
-	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
-	rl := ratelimit.New(rateLimit) //TODO: stop using constant
-	start := time.Now()
-	discoveredPorts := make([]string, 0)
-
-	for _, port := range ports {
-		if s.cancel.IsSet() {
-			return discoveredPorts, errors.New("scan timed out")
-		}
-		start = rl.Take() //Use the rate limiter
-		pint, err := strconv.Atoi(port)
+	worker := func(scanPorts []string, wg *sync.WaitGroup) {
+		defer wg.Done()
+		// First off, get the MAC address we should be sending packets to.
+		hwaddr, err := s.getHwAddr()
 		if err != nil {
-			log.Error(err)
-			return nil, err
+			errs <- err
+			return
 		}
-		tcp.DstPort = layers.TCPPort(pint)
-
-		if err := s.send(&eth, &ip4, &tcp); err != nil {
-			log.Errorf("error sending to port %v: %v", tcp.DstPort, err)
+		// Construct all the network layers we need.
+		eth := layers.Ethernet{
+			SrcMAC:       s.iface.HardwareAddr,
+			DstMAC:       hwaddr,
+			EthernetType: layers.EthernetTypeIPv4,
 		}
-		// Time out 5 seconds after the last packet we sent.
-		if time.Since(start) > time.Second*5 {
-			log.Errorf("timed out for %v, assuming we've seen all we can", s.dst)
-			return nil, err
+		ip4 := layers.IPv4{
+			SrcIP:    s.src,
+			DstIP:    s.dst,
+			Version:  4,
+			TTL:      64,
+			Protocol: layers.IPProtocolTCP,
 		}
-
-		log.Debugf("Scanning %v on port %d", s.dst, pint)
-		// Read in the next packet.
-		data, _, err := s.handle.ReadPacketData()
-		if err == pcap.NextErrorTimeoutExpired {
-			return nil, err
-		} else if err != nil {
-			log.Errorf("error reading packet: %v", err)
-			return nil, err
+		min := 10000
+		max := 65535
+		srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
+		tcp := layers.TCP{
+			SrcPort: srcPort,
+			DstPort: 0, // will be incremented during the scan
+			SYN:     true,
 		}
+		tcp.SetNetworkLayerForChecksum(&ip4)
 
-		// Parse the packet.  We'd use DecodingLayerParser here if we
-		// wanted to be really fast.
-		packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
+		// Create the flow we expect returning packets to have, so we can check
+		// against it and discard useless packets.
+		ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
+		rl := ratelimit.New(rateLimit) //TODO: stop using constant
+		start := time.Now()
+		discoveredPorts := make([]string, 0)
 
-		// Find the packets we care about, and print out logging
-		// information about them.  All others are ignored.
-		if net := packet.NetworkLayer(); net == nil {
-			log.Errorf("packet has no network layer")
-		} else if net.NetworkFlow() != ipFlow {
-			log.Errorf("packet does not match our ip src/dst")
-		} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
-			log.Errorf("packet has not tcp layer")
-		} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
-			// We panic here because this is guaranteed to never
-			// happen.
-			panic("tcp layer is not tcp layer :-/")
-		} else if tcp.DstPort != srcPort {
-			log.Errorf("dst port %v does not match", tcp.DstPort)
-		} else if tcp.RST {
-			log.Debugf("port %v closed", tcp.SrcPort)
-		} else if tcp.SYN && tcp.ACK {
-			log.Infof("port %v open", tcp.SrcPort)
-			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
-		} //else {
-		// log.Printf("ignoring useless packet")
-		//}
-		now := time.Now()
-		s.sampleRateInput <- &now
+		for _, port := range scanPorts {
+			if s.cancel.IsSet() {
+				errs <- errors.New("scan timed out")
+				results <- discoveredPorts
+			}
+			start = rl.Take() //Use the rate limiter
+			pint, err := strconv.Atoi(port)
+			if err != nil {
+				log.Error(err)
+				errs <- err
+			}
+			tcp.DstPort = layers.TCPPort(pint)
+
+			if err := s.send(&eth, &ip4, &tcp); err != nil {
+				log.Errorf("error sending to port %v: %v", tcp.DstPort, err)
+			}
+			// Time out 5 seconds after the last packet we sent.
+			if time.Since(start) > time.Second*5 {
+				log.Errorf("timed out for %v, assuming we've seen all we can", s.dst)
+				errs <- err
+			}
+
+			log.Debugf("Scanning %v on port %d", s.dst, pint)
+			// Read in the next packet.
+			data, _, err := s.handle.ReadPacketData()
+			if err == pcap.NextErrorTimeoutExpired {
+				errs <- err
+			} else if err != nil {
+				log.Errorf("error reading packet: %v", err)
+				errs <- err
+			}
+
+			// Parse the packet.  We'd use DecodingLayerParser here if we
+			// wanted to be really fast.
+			packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
+
+			// Find the packets we care about, and print out logging
+			// information about them.  All others are ignored.
+			if net := packet.NetworkLayer(); net == nil {
+				log.Errorf("packet has no network layer")
+			} else if net.NetworkFlow() != ipFlow {
+				log.Errorf("packet does not match our ip src/dst")
+			} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
+				log.Errorf("packet has not tcp layer")
+			} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
+				// We panic here because this is guaranteed to never
+				// happen.
+				panic("tcp layer is not tcp layer :-/")
+			} else if tcp.DstPort != srcPort {
+				log.Errorf("dst port %v does not match", tcp.DstPort)
+			} else if tcp.RST {
+				log.Debugf("port %v closed", tcp.SrcPort)
+			} else if tcp.SYN && tcp.ACK {
+				log.Infof("port %v open", tcp.SrcPort)
+				discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
+			} //else {
+			// log.Printf("ignoring useless packet")
+			//}
+			now := time.Now()
+			s.sampleRateInput <- &now
+		}
+		log.Debug("returning discovered ports")
+		results <- discoveredPorts
 	}
-	log.Debug("returning discovered ports")
-	return discoveredPorts, nil
+	var wg sync.WaitGroup
+	for _, chunk := range chunks {
+		wg.Add(1)
+		go worker(chunk, &wg)
+	}
+	wg.Wait() //Wait until all the scan workers finish
+	close(results)
+	close(errs)
+	//Collect results
+	discoveredPorts := make([]string, 0)
+	for ports := range results {
+		discoveredPorts = append(discoveredPorts, ports...)
+	}
+	errors := make([]error, 0)
+	if len(errs) > 0 {
+		err := <-errs
+		errors = append(errors, err)
+	}
+	return discoveredPorts, errors
 }
 
 //Calculate a sliding window average of scan times.  This could likely be optimized better but this will give a "true" average at the expense of computation/memory
@@ -426,4 +462,22 @@ func (s *Scanner) calculateSlidingWindow() {
 			s.samples = s.samples[:maxSamples]
 		}
 	}
+}
+
+//Chunk up the ports to be scanned to work can be done in parallel
+func divPorts(ports []string) [][]string {
+	chunkSize := 6000
+	divided := make([][]string, (len(ports) + chunkSize - 1/chunkSize))
+	prev := 0
+	i := 0
+	till := len(ports) - chunkSize
+	for prev < till {
+		next := prev + chunkSize
+		divided[i] = ports[prev:next]
+		prev = next
+		i++
+	}
+	divided[i] = ports[prev:]
+
+	return divided
 }

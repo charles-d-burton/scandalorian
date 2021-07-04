@@ -25,7 +25,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: REVERSEDNS_HOST
-          value: "nats-cluster.default.svc"
+          value:  "nats.default.svc"
         - name: REVERSEDNS_PORT
           value: "4222"
         name: scandalorian-reversedns

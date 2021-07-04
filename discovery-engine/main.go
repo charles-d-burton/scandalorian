@@ -140,8 +140,8 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 	}
 	chunks := divPorts(scan.Ports)
 	var wg sync.WaitGroup
-	results := make(chan []string)
-	errs := make(chan error)
+	results := make(chan []string, len(chunks))
+	errs := make(chan error, 100)
 	for _, chunk := range chunks {
 		wg.Add(1)
 		go func(pchunk []string) {
@@ -355,7 +355,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 
 	// Create the flow we expect returning packets to have, so we can check
 	// against it and discard useless packets.
-	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
+	//ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
 	rl := ratelimit.New(rateLimit) //TODO: stop using constant
 	start := time.Now()
 
@@ -397,18 +397,19 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		// information about them.  All others are ignored.
 		if net := packet.NetworkLayer(); net == nil {
 			log.Errorf("packet has no network layer")
-		} else if net.NetworkFlow() != ipFlow {
-			log.Errorf("packet does not match our ip src/dst")
-		} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
-			log.Errorf("packet has not tcp layer")
-		} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
-			// We panic here because this is guaranteed to never
-			// happen.
-			panic("tcp layer is not tcp layer :-/")
-		} else if tcp.DstPort != srcPort {
-			log.Errorf("dst port %v does not match", tcp.DstPort)
-		} else if tcp.RST {
-			log.Debugf("port %v closed", tcp.SrcPort)
+			/*} else if net.NetworkFlow() != ipFlow {
+				log.Errorf("packet does not match our ip src/dst")
+			} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
+				log.Errorf("packet has not tcp layer")
+			} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
+				// We panic here because this is guaranteed to never
+				// happen.
+				panic("tcp layer is not tcp layer :-/")
+			} else if tcp.DstPort != srcPort {
+				log.Errorf("dst port %v does not match", tcp.DstPort)
+			} else if tcp.RST {
+				log.Debugf("port %v closed", tcp.SrcPort)
+			}*/
 		} else if tcp.SYN && tcp.ACK {
 			log.Infof("port %v open", tcp.SrcPort)
 			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))

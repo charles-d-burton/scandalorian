@@ -467,17 +467,13 @@ func (s *Scanner) calculateSlidingWindow() {
 //Chunk up the ports to be scanned to work can be done in parallel
 func divPorts(ports []string) [][]string {
 	chunkSize := 6000
-	divided := make([][]string, (len(ports) + chunkSize - 1/chunkSize))
-	prev := 0
-	i := 0
-	till := len(ports) - chunkSize
-	for prev < till {
-		next := prev + chunkSize
-		divided[i] = ports[prev:next]
-		prev = next
-		i++
+	var divided [][]string
+	for i := 0; i < len(ports); i += chunkSize {
+		end := i + chunkSize
+		if end > len(ports) {
+			end = len(ports)
+		}
+		divided = append(divided, ports[i:end])
 	}
-	divided[i] = ports[prev:]
-
 	return divided
 }

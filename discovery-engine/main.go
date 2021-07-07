@@ -345,28 +345,6 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Construct all the network layers we need.
-	eth := layers.Ethernet{
-		SrcMAC:       s.iface.HardwareAddr,
-		DstMAC:       hwaddr,
-		EthernetType: layers.EthernetTypeIPv4,
-	}
-	ip4 := layers.IPv4{
-		SrcIP:    sc.Src,
-		DstIP:    sc.Dst,
-		Version:  4,
-		TTL:      64,
-		Protocol: layers.IPProtocolTCP,
-	}
-	min := 10000
-	max := 65535
-	srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
-	tcp := layers.TCP{
-		SrcPort: srcPort,
-		DstPort: 0, // will be incremented during the scan
-		SYN:     true,
-	}
-	tcp.SetNetworkLayerForChecksum(&ip4)
 
 	// Create the flow we expect returning packets to have, so we can check
 	// against it and discard useless packets.
@@ -375,6 +353,28 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 	start := time.Now()
 
 	for _, port := range ports {
+		// Construct all the network layers we need.
+		eth := layers.Ethernet{
+			SrcMAC:       s.iface.HardwareAddr,
+			DstMAC:       hwaddr,
+			EthernetType: layers.EthernetTypeIPv4,
+		}
+		ip4 := layers.IPv4{
+			SrcIP:    sc.Src,
+			DstIP:    sc.Dst,
+			Version:  4,
+			TTL:      64,
+			Protocol: layers.IPProtocolTCP,
+		}
+		min := 10000
+		max := 65535
+		srcPort := layers.TCPPort(uint16(rand.Intn(max-min) + min)) //Create a random high port
+		tcp := layers.TCP{
+			SrcPort: srcPort,
+			DstPort: 0, // will be incremented during the scan
+			SYN:     true,
+		}
+		tcp.SetNetworkLayerForChecksum(&ip4)
 		if s.cancel.IsSet() {
 			return discoveredPorts, err
 		}
@@ -403,8 +403,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 			log.Errorf("error reading packet: %v", err)
 			return discoveredPorts, err
 		}
-		var tcp layers.TCP
-		parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &tcp)
+		parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &tcp)
 		decoded := []gopacket.LayerType{}
 		if err := parser.DecodeLayers(data, &decoded); err != nil {
 			fmt.Fprintf(os.Stderr, "Could not decode layers: %v\n", err)

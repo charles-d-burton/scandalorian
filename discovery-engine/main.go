@@ -403,7 +403,8 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 			log.Errorf("error reading packet: %v", err)
 			return discoveredPorts, err
 		}
-		parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &tcp)
+		var arp layers.ARP
+		parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &arp, &eth, &ip4, &tcp)
 		decoded := []gopacket.LayerType{}
 		if err := parser.DecodeLayers(data, &decoded); err != nil {
 			fmt.Fprintf(os.Stderr, "Could not decode layers: %v\n", err)
@@ -414,35 +415,6 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 			//This is hacky but it's what the library gives me
 			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
 		}
-		/*
-			// Parse the packet.  We'd use DecodingLayerParser here if we
-			// wanted to be really fast.
-			packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
-
-			// Find the packets we care about, and print out logging
-			// information about them.  All others are ignored.
-			if net := packet.NetworkLayer(); net == nil {
-				log.Errorf("packet has no network layer")
-			} else if net.NetworkFlow() != ipFlow {
-				log.Errorf("packet does not match our ip src/dst")
-			} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
-				log.Errorf("packet has not tcp layer")
-			} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
-				// We panic here because this is guaranteed to never
-				// happen.
-				panic("tcp layer is not tcp layer :-/")
-			} else if tcp.DstPort != srcPort {
-				log.Errorf("dst port %v does not match", tcp.DstPort)
-			} else if tcp.RST {
-				log.Debugf("port %v closed", tcp.SrcPort)
-			} else  if tcp.SYN && tcp.ACK {
-				log.Infof("port %v open", tcp.SrcPort)
-				//This is hacky but it's what the library gives me
-				discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
-			} //else {
-			// log.Printf("ignoring useless packet")
-			//}
-		*/
 		now := time.Now()
 		s.sampleRateInput <- &now
 	}

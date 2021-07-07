@@ -370,7 +370,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 
 	// Create the flow we expect returning packets to have, so we can check
 	// against it and discard useless packets.
-	//ipFlow := gopacket.NewFlow(layers.EndpointIPv4, s.dst, s.src)
+	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, sc.Dst, sc.Src)
 	rl := ratelimit.New(rateLimit) //TODO: stop using constant
 	start := time.Now()
 
@@ -396,7 +396,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 
 		log.Debugf("Scanning %v on port %d", sc.Dst, pint)
 		// Read in the next packet.
-		_, _, err = s.handle.ReadPacketData()
+		data, _, err := s.handle.ReadPacketData()
 		if err == pcap.NextErrorTimeoutExpired {
 			return discoveredPorts, err
 		} else if err != nil {
@@ -406,13 +406,13 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 
 		// Parse the packet.  We'd use DecodingLayerParser here if we
 		// wanted to be really fast.
-		//packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
+		packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
 
 		// Find the packets we care about, and print out logging
 		// information about them.  All others are ignored.
-		//if net := packet.NetworkLayer(); net == nil {
-		//log.Errorf("packet has no network layer")
-		/*} else if net.NetworkFlow() != ipFlow {
+		if net := packet.NetworkLayer(); net == nil {
+			log.Errorf("packet has no network layer")
+		} else if net.NetworkFlow() != ipFlow {
 			log.Errorf("packet does not match our ip src/dst")
 		} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
 			log.Errorf("packet has not tcp layer")
@@ -424,10 +424,9 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 			log.Errorf("dst port %v does not match", tcp.DstPort)
 		} else if tcp.RST {
 			log.Debugf("port %v closed", tcp.SrcPort)
-		}*/
-		//} else
-		if tcp.SYN && tcp.ACK {
+		} else if tcp.SYN && tcp.ACK {
 			log.Infof("port %v open", tcp.SrcPort)
+			//This is hacky but it's what the library gives me
 			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
 		} //else {
 		// log.Printf("ignoring useless packet")

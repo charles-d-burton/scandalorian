@@ -412,7 +412,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 		parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &arp, &eth, &ip4, &tcp)
 		decoded := []gopacket.LayerType{}
 		if err := parser.DecodeLayers(data, &decoded); err != nil {
-			fmt.Fprintf(os.Stderr, "Could not decode layers: %v\n", err)
+			log.Errorf("Could not decode layers: %v\n", err)
 			continue
 		}
 		if tcp.SYN && tcp.ACK {

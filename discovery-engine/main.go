@@ -370,7 +370,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 
 	// Create the flow we expect returning packets to have, so we can check
 	// against it and discard useless packets.
-	ipFlow := gopacket.NewFlow(layers.EndpointIPv4, sc.Dst, sc.Src)
+	//ipFlow := gopacket.NewFlow(layers.EndpointIPv4, sc.Dst, sc.Src)
 	rl := ratelimit.New(rateLimit) //TODO: stop using constant
 	start := time.Now()
 
@@ -412,7 +412,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 		// information about them.  All others are ignored.
 		if net := packet.NetworkLayer(); net == nil {
 			log.Errorf("packet has no network layer")
-		} else if net.NetworkFlow() != ipFlow {
+		} /*else if net.NetworkFlow() != ipFlow {
 			log.Errorf("packet does not match our ip src/dst")
 		} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
 			log.Errorf("packet has not tcp layer")
@@ -424,7 +424,7 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 			log.Errorf("dst port %v does not match", tcp.DstPort)
 		} else if tcp.RST {
 			log.Debugf("port %v closed", tcp.SrcPort)
-		} else if tcp.SYN && tcp.ACK {
+		} else*/if tcp.SYN && tcp.ACK {
 			log.Infof("port %v open", tcp.SrcPort)
 			//This is hacky but it's what the library gives me
 			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))

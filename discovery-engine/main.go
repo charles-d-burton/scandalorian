@@ -381,7 +381,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 
 		log.Debugf("Scanning %v on port %d", s.dst, pint)
 		// Read in the next packet.
-		data, _, err := s.handle.ReadPacketData()
+		_, _, err = s.handle.ReadPacketData()
 		if err == pcap.NextErrorTimeoutExpired {
 			return discoveredPorts, err
 		} else if err != nil {
@@ -391,26 +391,27 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 
 		// Parse the packet.  We'd use DecodingLayerParser here if we
 		// wanted to be really fast.
-		packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
+		//packet := gopacket.NewPacket(data, layers.LayerTypeEthernet, gopacket.NoCopy)
 
 		// Find the packets we care about, and print out logging
 		// information about them.  All others are ignored.
-		if net := packet.NetworkLayer(); net == nil {
-			log.Errorf("packet has no network layer")
-			/*} else if net.NetworkFlow() != ipFlow {
-				log.Errorf("packet does not match our ip src/dst")
-			} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
-				log.Errorf("packet has not tcp layer")
-			} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
-				// We panic here because this is guaranteed to never
-				// happen.
-				panic("tcp layer is not tcp layer :-/")
-			} else if tcp.DstPort != srcPort {
-				log.Errorf("dst port %v does not match", tcp.DstPort)
-			} else if tcp.RST {
-				log.Debugf("port %v closed", tcp.SrcPort)
-			}*/
-		} else if tcp.SYN && tcp.ACK {
+		//if net := packet.NetworkLayer(); net == nil {
+		//log.Errorf("packet has no network layer")
+		/*} else if net.NetworkFlow() != ipFlow {
+			log.Errorf("packet does not match our ip src/dst")
+		} else if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer == nil {
+			log.Errorf("packet has not tcp layer")
+		} else if tcp, ok := tcpLayer.(*layers.TCP); !ok {
+			// We panic here because this is guaranteed to never
+			// happen.
+			panic("tcp layer is not tcp layer :-/")
+		} else if tcp.DstPort != srcPort {
+			log.Errorf("dst port %v does not match", tcp.DstPort)
+		} else if tcp.RST {
+			log.Debugf("port %v closed", tcp.SrcPort)
+		}*/
+		//} else
+		if tcp.SYN && tcp.ACK {
 			log.Infof("port %v open", tcp.SrcPort)
 			discoveredPorts = append(discoveredPorts, (strings.Split(tcp.SrcPort.String(), "(")[0]))
 		} //else {

@@ -164,9 +164,14 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 				errs <- err
 				return
 			}
-			defer scanner.close()
+			worker, err := newWorker(scanner.Iface)
+			defer worker.close()
+			if err != nil {
+				errs <- err
+				return
+			}
 
-			discoveredPorts, err := scanner.scan(pchunk)
+			discoveredPorts, err := worker.scan(pchunk, scanner)
 			if err != nil {
 				errs <- err
 			}
@@ -200,11 +205,15 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 
 // scanner handles scanning a single IP address.
 type Scanner struct {
-	// iface is the interface to send packets on.
-	iface *net.Interface
 	// destination, gateway (if applicable), and source IP addresses to use.
-	dst, gw, src net.IP
+	Dst, Gw, Src net.IP
+	// iface is the interface to send packets on.
+	Iface *net.Interface
+}
 
+type ScanWorker struct {
+	// iface is the interface to send packets on.
+	iface  *net.Interface
 	handle *pcap.Handle
 
 	// opts and buf allow us to easily serialize packets in the send()
@@ -221,12 +230,7 @@ type Scanner struct {
 // router to determine how to route packets to that IP.
 func newScanner(ip net.IP, router routing.Router) (*Scanner, error) {
 	s := &Scanner{
-		dst: ip,
-		opts: gopacket.SerializeOptions{
-			FixLengths:       true,
-			ComputeChecksums: true,
-		},
-		buf: gopacket.NewSerializeBuffer(),
+		Dst: ip,
 	}
 	// Figure out the route to the IP.
 	iface, gw, src, err := router.Route(ip)
@@ -235,8 +239,19 @@ func newScanner(ip net.IP, router routing.Router) (*Scanner, error) {
 	}
 
 	log.Infof("scanning ip %v with interface %v, gateway %v, src %v", ip, iface.Name, gw, src)
-	s.gw, s.src, s.iface = gw, src, iface
+	s.Gw, s.Src, s.Iface = gw, src, iface
 
+	return s, nil
+}
+
+func newWorker(iface *net.Interface) (*ScanWorker, error) {
+	var scanWorker ScanWorker
+	scanWorker.opts = gopacket.SerializeOptions{
+		FixLengths:       true,
+		ComputeChecksums: true,
+	}
+	scanWorker.buf = gopacket.NewSerializeBuffer()
+	scanWorker.iface = iface
 	// Open the handle for reading/writing.
 	// Note we could very easily add some BPF filtering here to greatly
 	// decrease the number of packets we have to look at when getting back
@@ -245,14 +260,14 @@ func newScanner(ip net.IP, router routing.Router) (*Scanner, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.handle = handle
-	s.sampleRateInput = make(chan *time.Time, 51)
-	s.cancel = abool.New()
-	return s, nil
+	scanWorker.handle = handle
+	scanWorker.sampleRateInput = make(chan *time.Time, 51)
+	scanWorker.cancel = abool.New()
+	return &scanWorker, nil
 }
 
 // close cleans up the handle.
-func (s *Scanner) close() {
+func (s *ScanWorker) close() {
 	s.handle.Close()
 }
 
@@ -261,15 +276,15 @@ func (s *Scanner) close() {
 // one) or destination IP (if no gateway is necessary), then waits for an ARP
 // reply.  This is pretty slow right now, since it blocks on the ARP
 // request/reply.
-func (s *Scanner) getHwAddr() (net.HardwareAddr, error) {
+func (sw *ScanWorker) getHwAddr(sc *Scanner) (net.HardwareAddr, error) {
 	start := time.Now()
-	arpDst := s.dst
-	if s.gw != nil {
-		arpDst = s.gw
+	arpDst := sc.Dst
+	if sc.Gw != nil {
+		arpDst = sc.Gw
 	}
 	// Prepare the layers to send for an ARP request.
 	eth := layers.Ethernet{
-		SrcMAC:       s.iface.HardwareAddr,
+		SrcMAC:       sw.iface.HardwareAddr,
 		DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
 		EthernetType: layers.EthernetTypeARP,
 	}
@@ -279,14 +294,14 @@ func (s *Scanner) getHwAddr() (net.HardwareAddr, error) {
 		HwAddressSize:     6,
 		ProtAddressSize:   4,
 		Operation:         layers.ARPRequest,
-		SourceHwAddress:   []byte(s.iface.HardwareAddr),
-		SourceProtAddress: []byte(s.src),
+		SourceHwAddress:   []byte(sw.iface.HardwareAddr),
+		SourceProtAddress: []byte(sc.Src),
 		DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
 		DstProtAddress:    []byte(arpDst),
 	}
 	// Send a single ARP request packet (we never retry a send, since this
 	// is just an example ;)
-	if err := s.send(&eth, &arp); err != nil {
+	if err := sw.send(&eth, &arp); err != nil {
 		return nil, err
 	}
 
@@ -295,7 +310,7 @@ func (s *Scanner) getHwAddr() (net.HardwareAddr, error) {
 		if time.Since(start) > time.Second*3 {
 			return nil, errors.New("timeout getting ARP reply")
 		}
-		data, _, err := s.handle.ReadPacketData()
+		data, _, err := sw.handle.ReadPacketData()
 		if err == pcap.NextErrorTimeoutExpired {
 			continue
 		} else if err != nil {
@@ -312,7 +327,7 @@ func (s *Scanner) getHwAddr() (net.HardwareAddr, error) {
 }
 
 // send sends the given layers as a single packet on the network.
-func (s *Scanner) send(l ...gopacket.SerializableLayer) error {
+func (s *ScanWorker) send(l ...gopacket.SerializableLayer) error {
 	if err := gopacket.SerializeLayers(s.buf, s.opts, l...); err != nil {
 		return err
 	}
@@ -321,12 +336,12 @@ func (s *Scanner) send(l ...gopacket.SerializableLayer) error {
 
 // this code is fugly, I need to make it more readable
 // scan scans the dst IP address of this scanner.
-func (s *Scanner) scan(ports []string) ([]string, error) {
+func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 	//Start the average calculation
 	go s.calculateSlidingWindow()
 	discoveredPorts := make([]string, 0)
 	// First off, get the MAC address we should be sending packets to.
-	hwaddr, err := s.getHwAddr()
+	hwaddr, err := s.getHwAddr(sc)
 	if err != nil {
 		return nil, err
 	}
@@ -337,8 +352,8 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		EthernetType: layers.EthernetTypeIPv4,
 	}
 	ip4 := layers.IPv4{
-		SrcIP:    s.src,
-		DstIP:    s.dst,
+		SrcIP:    sc.Src,
+		DstIP:    sc.Dst,
 		Version:  4,
 		TTL:      64,
 		Protocol: layers.IPProtocolTCP,
@@ -375,11 +390,11 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 		}
 		// Time out 5 seconds after the last packet we sent.
 		if time.Since(start) > time.Second*5 {
-			log.Errorf("timed out for %v, assuming we've seen all we can", s.dst)
+			log.Errorf("timed out for %v, assuming we've seen all we can", sc.Dst)
 			return discoveredPorts, err
 		}
 
-		log.Debugf("Scanning %v on port %d", s.dst, pint)
+		log.Debugf("Scanning %v on port %d", sc.Dst, pint)
 		// Read in the next packet.
 		_, _, err = s.handle.ReadPacketData()
 		if err == pcap.NextErrorTimeoutExpired {
@@ -425,7 +440,7 @@ func (s *Scanner) scan(ports []string) ([]string, error) {
 }
 
 //Calculate a sliding window average of scan times.  This could likely be optimized better but this will give a "true" average at the expense of computation/memory
-func (s *Scanner) calculateSlidingWindow() {
+func (s *ScanWorker) calculateSlidingWindow() {
 	now := time.Now()
 	for sampleTime := range s.sampleRateInput {
 		diff := sampleTime.Sub(now) //difference last sample with current sample

@@ -188,10 +188,15 @@ func (scan *Scan) ProcessRequest(bus MessageBus) error {
 	for err := range errs {
 		errStrings = append(errStrings, err.Error())
 	}
-
+	set := make(map[string]bool)
 	discoveredPorts := make([]string, 0)
 	for ports := range results {
-		discoveredPorts = append(discoveredPorts, ports...)
+		for _, port := range ports {
+			set[port] = true
+		}
+	}
+	for k := range set {
+		discoveredPorts = append(discoveredPorts, k)
 	}
 	if len(discoveredPorts) == 0 {
 		log.Infof("Not open ports found for request %s", scan.RequestID)

@@ -19,7 +19,7 @@ const (
 
 var (
 	workers   int
-	workQueue = make(chan *Scan, 10)
+	workQueue = make(chan *Scan, 5)
 	json      = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 

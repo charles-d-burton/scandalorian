@@ -75,7 +75,7 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 	}
 	go func() {
 		for {
-			msgs, err := sub.Fetch(1, nats.MaxWait(10*time.Second))
+			msgs, err := sub.Fetch(5, nats.MaxWait(10*time.Second))
 			if err != nil {
 				log.Error(err)
 			}

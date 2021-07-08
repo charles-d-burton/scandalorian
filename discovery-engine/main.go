@@ -46,7 +46,7 @@ const (
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string, errChan chan error)
-	Subscribe(errChan chan error) chan []byte
+	Subscribe(ack chan bool, errChan chan error) chan []byte
 	Publish(scan *Scan) error
 	Close()
 }
@@ -105,7 +105,8 @@ func main() {
 	bus.Connect(host, v.GetString("port"), errChan)
 
 	go func() {
-		messageChan := bus.Subscribe(errChan)
+		ackChan := make(chan bool, 1)
+		messageChan := bus.Subscribe(ackChan, errChan)
 		for message := range messageChan {
 			log.Debug("processing scan")
 			var scan Scan
@@ -117,11 +118,12 @@ func main() {
 			err = scan.ProcessRequest(bus)
 			if err != nil {
 				errChan <- err
-				break
 			}
+			ackChan <- true
 		}
 	}()
 
+	//This should be rethought for liveness/readiness probes instead
 	for err := range errChan {
 		bus.Close()
 		if err != nil {
@@ -351,9 +353,6 @@ func (s *ScanWorker) scan(ports []string, sc *Scanner) ([]string, error) {
 		return nil, err
 	}
 
-	// Create the flow we expect returning packets to have, so we can check
-	// against it and discard useless packets.
-	//ipFlow := gopacket.NewFlow(layers.EndpointIPv4, sc.Dst, sc.Src)
 	rl := ratelimit.New(rateLimit) //TODO: stop using constant
 	start := time.Now()
 

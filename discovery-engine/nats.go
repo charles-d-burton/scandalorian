@@ -67,15 +67,46 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
  * TODO: There's a bug here where a message needs to be acked back after a scan is finished
  */
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
-func (natsConn *NatsConn) Subscribe(errChan chan error) chan []byte {
+func (natsConn *NatsConn) Subscribe(ackChan chan bool, errChan chan error) chan []byte {
 	log.Infof("Listening on topic: %v", subscription)
 	bch := make(chan []byte, 1)
+	sub, err := natsConn.JS.PullSubscribe(subscription, durableName, nats.PullMaxWaiting(128), nats.ManualAck())
+	if err != nil {
+		errChan <- err
+		return nil
+	}
+	go func() {
+		for {
+			msgs, err := sub.Fetch(1)
+			if err != nil {
+				errChan <- err
+			}
+			for _, msg := range msgs {
+				if err != nil {
+					errChan <- err
+				}
+				bch <- msg.Data
+				ack := <-ackChan
+				if ack {
+					msg.Ack()
+					continue
+				}
+				msg.Nak()
+			}
+		}
+	}()
 
-	natsConn.JS.Subscribe(subscription, func(m *nats.Msg) {
+	/*natsConn.JS.Subscribe(subscription, func(m *nats.Msg) {
 		log.Debug("message received from Jetstream")
 		bch <- m.Data
-		m.Ack() //TOOD: this right here is a bad idea, I can have to messages in flight with a probability of failure
-	}, nats.Durable(durableName), nats.ManualAck())
+		err := <-errChan
+		if err != nil {
+			m.Nak()
+			log.Error(err)
+			return
+		}
+		m.Ack()
+	}, nats.Durable(durableName), nats.ManualAck())*/
 	return bch
 }
 

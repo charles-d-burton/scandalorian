@@ -23,14 +23,6 @@ var (
 	json      = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
-//MessageBus Interface for making generic connections to message busses
-type MessageBus interface {
-	Connect(host, port string, errChan chan error)
-	Subscribe(errChan chan error) chan []byte
-	Publish(data []byte) error
-	Close()
-}
-
 //Scan structure to send to message queue for scanning
 type Scan struct {
 	IP        string      `json:"ip"`

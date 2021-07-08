@@ -26,12 +26,8 @@ import (
 /*
  * TODO List:
  * Need to verify that sending interface is IPV4 until I have time to figure out IPV6
- * Pass message along to NMAP scanner engine
- * Decide if a worker pool pattern of scanning multiple IP addresses makes sense.  I suspect it does
-   and the refactor I did makes that easier now
- * Implement DecodingLayerParser for a speed gain, this thing is all about speed
  * Consider eBPF rather than libpcap and doing it raw on the wire
-*/
+ */
 
 const (
 	streamName   = "discovery"
@@ -42,19 +38,6 @@ const (
 	maxSamples   = 50
 	maxDuration  = 2 //Average number of seconds a scan is taking,  TODO: should convert to tunable
 )
-
-//MessageBus Interface for making generic connections to message busses
-type MessageBus interface {
-	Connect(host, port string, errChan chan error)
-	Subscribe(errChan chan error) chan *Message
-	Publish(scan *Scan) error
-	Close()
-}
-
-type Message struct {
-	Data        []byte
-	acknowledge chan bool
-}
 
 //Scan structure to send to message queue for scanning
 type Scan struct {

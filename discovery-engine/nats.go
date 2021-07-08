@@ -81,7 +81,6 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 			msgs, err := sub.Fetch(1, nats.MaxWait(10*time.Second))
 			if err != nil {
 				log.Error(err)
-				//errChan <- err
 			}
 			for _, msg := range msgs {
 				if err != nil {
@@ -98,24 +97,12 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 			}
 		}
 	}()
-
-	/*natsConn.JS.Subscribe(subscription, func(m *nats.Msg) {
-		log.Debug("message received from Jetstream")
-		bch <- m.Data
-		err := <-errChan
-		if err != nil {
-			m.Nak()
-			log.Error(err)
-			return
-		}
-		m.Ack()
-	}, nats.Durable(durableName), nats.ManualAck())*/
 	return bch
 }
 
 //Close the connection
 func (natsConn *NatsConn) Close() {
-	natsConn.Conn.Close()
+	natsConn.Conn.Drain()
 }
 
 //Setup the streams
@@ -136,25 +123,4 @@ func (natsConn *NatsConn) createStream() error {
 		}
 	}
 	return nil
-}
-
-func newMessage(data []byte) *Message {
-	var message Message
-	message.Data = data
-	message.acknowledge = make(chan bool, 1)
-	return &message
-}
-
-//Ack acknowledge message delivered
-func (msg *Message) Ack() {
-	msg.acknowledge <- true
-}
-
-//Nack acknowledge message processing failure
-func (msg *Message) Nak() {
-	msg.acknowledge <- false
-}
-
-func (msg *Message) Processed() bool {
-	return <-msg.acknowledge
 }

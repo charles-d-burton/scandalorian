@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 //NatsConn struct to satisfy the interface
 type NatsConn struct {
 	Conn *nats.Conn
@@ -31,7 +33,7 @@ func (natsConn *NatsConn) Connect(host, port string) error {
 
 //Publish push messages to NATS
 func (natsConn *NatsConn) Publish(scan *Scan) error {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	data, err := json.Marshal(scan)
 	if err != nil {
 		return err

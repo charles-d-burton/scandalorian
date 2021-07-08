@@ -16,8 +16,8 @@ import (
 var (
 	messageBus MessageBus
 	streams    = map[string]string{
-		"discovery":  "discovery.requests",
-		"zonewalk":   "zonewalk.requests",
+		"discovery": "discovery.requests",
+		//"zonewalk":   "zonewalk.requests", //Isn't online/ready yet
 		"reversedns": "reversedns.reqeusts",
 	}
 )

@@ -87,12 +87,12 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 				}
 				message := newMessage(msg.Data)
 				bch <- message
-				ack := <-message.Ack
-				if ack {
-					msg.Ack()
+				ack := message.Processed()
+				if !ack {
+					msg.Nak()
 					continue
 				}
-				msg.Nak()
+				msg.Ack()
 			}
 		}
 	}()
@@ -139,6 +139,20 @@ func (natsConn *NatsConn) createStream() error {
 func newMessage(data []byte) *Message {
 	var message Message
 	message.Data = data
-	message.Ack = make(chan bool, 1)
+	message.acknowledge = make(chan bool, 1)
 	return &message
+}
+
+//Ack acknowledge message delivered
+func (msg *Message) Ack() {
+	msg.acknowledge <- true
+}
+
+//Nack acknowledge message processing failure
+func (msg *Message) Nak() {
+	msg.acknowledge <- false
+}
+
+func (msg *Message) Processed() bool {
+	return <-msg.acknowledge
 }

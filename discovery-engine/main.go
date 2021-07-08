@@ -52,8 +52,8 @@ type MessageBus interface {
 }
 
 type Message struct {
-	Data []byte
-	Ack  chan bool
+	Data        []byte
+	acknowledge chan bool
 }
 
 //Scan structure to send to message queue for scanning
@@ -122,7 +122,10 @@ func main() {
 			err = scan.ProcessRequest(bus)
 			if err != nil {
 				errChan <- err
+				message.Nak()
+				break
 			}
+			message.Ack()
 		}
 	}()
 

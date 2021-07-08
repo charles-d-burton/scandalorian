@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	nats "github.com/nats-io/nats.go"
@@ -77,7 +78,7 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 	}
 	go func() {
 		for {
-			msgs, err := sub.Fetch(1)
+			msgs, err := sub.Fetch(1, nats.MaxWait(10*time.Second))
 			if err != nil {
 				log.Error(err)
 				//errChan <- err

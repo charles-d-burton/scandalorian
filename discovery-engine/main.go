@@ -46,9 +46,14 @@ const (
 //MessageBus Interface for making generic connections to message busses
 type MessageBus interface {
 	Connect(host, port string, errChan chan error)
-	Subscribe(ack chan bool, errChan chan error) chan []byte
+	Subscribe(errChan chan error) chan *Message
 	Publish(scan *Scan) error
 	Close()
+}
+
+type Message struct {
+	Data []byte
+	Ack  chan bool
 }
 
 //Scan structure to send to message queue for scanning
@@ -105,12 +110,11 @@ func main() {
 	bus.Connect(host, v.GetString("port"), errChan)
 
 	go func() {
-		ackChan := make(chan bool, 1)
-		messageChan := bus.Subscribe(ackChan, errChan)
+		messageChan := bus.Subscribe(errChan)
 		for message := range messageChan {
 			log.Debug("processing scan")
 			var scan Scan
-			err := json.Unmarshal(message, &scan)
+			err := json.Unmarshal(message.Data, &scan)
 			if err != nil {
 				errChan <- err
 				break
@@ -119,7 +123,6 @@ func main() {
 			if err != nil {
 				errChan <- err
 			}
-			ackChan <- true
 		}
 	}()
 

@@ -67,9 +67,9 @@ func (natsConn *NatsConn) Publish(scan *Scan) error {
  * TODO: There's a bug here where a message needs to be acked back after a scan is finished
  */
 //Subscribe subscribe to a topic in NATS TODO: Switch to encoded connections
-func (natsConn *NatsConn) Subscribe(ackChan chan bool, errChan chan error) chan []byte {
+func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 	log.Infof("Listening on topic: %v", subscription)
-	bch := make(chan []byte, 1)
+	bch := make(chan *Message, 1)
 	sub, err := natsConn.JS.PullSubscribe(subscription, durableName, nats.PullMaxWaiting(128), nats.ManualAck())
 	if err != nil {
 		errChan <- err
@@ -85,8 +85,9 @@ func (natsConn *NatsConn) Subscribe(ackChan chan bool, errChan chan error) chan 
 				if err != nil {
 					errChan <- err
 				}
-				bch <- msg.Data
-				ack := <-ackChan
+				message := newMessage(msg.Data)
+				bch <- message
+				ack := <-message.Ack
 				if ack {
 					msg.Ack()
 					continue
@@ -133,4 +134,11 @@ func (natsConn *NatsConn) createStream() error {
 		}
 	}
 	return nil
+}
+
+func newMessage(data []byte) *Message {
+	var message Message
+	message.Data = data
+	message.Ack = make(chan bool, 1)
+	return &message
 }

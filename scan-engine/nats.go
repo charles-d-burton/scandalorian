@@ -48,7 +48,7 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 }
 
 //Publish push messages to NATS
-func (natsConn *NatsConn) Publish(scan *Scan) error {
+func (natsConn *NatsConn) Publish(scan *Run) error {
 	log.Infof("Publishing scan: %v to topic: %v", scan, publish)
 	data, err := json.Marshal(scan)
 	if err != nil {

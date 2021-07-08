@@ -4,7 +4,7 @@ package main
 type MessageBus interface {
 	Connect(host, port string, errChan chan error)
 	Subscribe(errChan chan error) chan *Message
-	Publish(scan *Scan) error
+	Publish(run *Run) error
 	Close()
 }
 

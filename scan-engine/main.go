@@ -96,10 +96,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		for data := range dch { //Wait for incoming scan requests
-			log.Info(string(data))
+		for message := range dch { //Wait for incoming scan requests
+			log.Info(string(message.Data))
 			var scan Scan
-			err := json.Unmarshal(data, &scan)
+			err := json.Unmarshal(message.Data, &scan)
 			if err != nil {
 				log.Error(err)
 				continue
@@ -127,14 +127,15 @@ func createWorkerPool(workers int, bus MessageBus) error {
 	return nil
 }
 
+type Run struct {
+	Run       *nmap.Run `json:"nmap_result"`
+	IP        string    `json:"ip"`
+	ScanID    string    `json:"scan_id"`
+	RequestID string    `json:"request_id"`
+}
+
 func (worker *NMAPWorker) start(id int, bus MessageBus) error {
-	type Run struct {
-		Run       *nmap.Run `json:"nmap_result"`
-		IP        string    `json:"ip"`
-		ScanID    string    `json:"scan_id"`
-		RequestID string    `json:"request_id"`
-	}
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	log.Infof("Starting NMAP Worker %d", id, "waiting for work...")
 	for scan := range workQueue {
 		if len(scan.Ports) > 0 {
@@ -175,11 +176,7 @@ func (worker *NMAPWorker) start(id int, bus MessageBus) error {
 			run.Run = result
 			run.ScanID = scan.ScanID
 			run.RequestID = scan.RequestID
-			data, err := json.Marshal(&run)
-			if err != nil {
-				log.Errorf("Error marshalling result: %v", err)
-			}
-			bus.Publish(data)
+			bus.Publish(&run)
 		}
 	}
 	return nil

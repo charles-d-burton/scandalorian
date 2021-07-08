@@ -79,7 +79,8 @@ func (natsConn *NatsConn) Subscribe(errChan chan error) chan *Message {
 		for {
 			msgs, err := sub.Fetch(1)
 			if err != nil {
-				errChan <- err
+				log.Error(err)
+				//errChan <- err
 			}
 			for _, msg := range msgs {
 				if err != nil {

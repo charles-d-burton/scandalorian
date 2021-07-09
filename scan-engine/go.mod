@@ -9,8 +9,8 @@ require (
 	github.com/nats-io/nats-server/v2 v2.2.6 // indirect
 	github.com/nats-io/nats.go v1.11.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/viper v1.8.0
+	github.com/spf13/viper v1.8.1
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/text v0.3.6 // indirect
 )

@@ -52,11 +52,12 @@ func (natsConn *NatsConn) Connect(host, port string, errChan chan error) {
 
 //Publish push messages to NATS
 func (natsConn *NatsConn) Publish(scan *Scan) error {
-	log.Infof("Publishing scan: %v to topic: %v", scan, publish)
 	data, err := json.Marshal(scan)
 	if err != nil {
 		return err
 	}
+	log.Infof("Publishing scan: %v to topic: %v", string(data), publish)
+
 	_, err = natsConn.JS.Publish(publish, data)
 	if err != nil {
 		return err

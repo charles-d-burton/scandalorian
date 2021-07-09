@@ -102,8 +102,10 @@ func main() {
 			err := json.Unmarshal(message.Data, &scan)
 			if err != nil {
 				log.Error(err)
+				message.Nak()
 				continue
 			}
+			message.Ack()      //Need to figure this out later, could lose scans here
 			workQueue <- &scan //publish work
 		}
 	}()

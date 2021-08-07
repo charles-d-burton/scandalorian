@@ -28,7 +28,7 @@
 			"path": "argocd"
 		},
 		{
-			"path": "."
+			"path": "./"
 		}
 	],
 	"settings": {}

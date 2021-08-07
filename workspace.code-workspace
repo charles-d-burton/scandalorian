@@ -23,6 +23,12 @@
 		},
 		{
 			"path": "scandalorian-zonewalk-engine"
+		},
+		{
+			"path": "argocd"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {}

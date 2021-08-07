@@ -1,28 +1,28 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"path": "scandalorian-ingest"
 		},
 		{
-			"path": "collector"
+			"path": "scandalorian-types"
 		},
 		{
-			"path": "zonewalk"
+			"path": "scandalorian-scan-engine"
 		},
 		{
-			"path": "scan-engine"
+			"path": "scandalorian-discovery-engine"
 		},
 		{
-			"path": "reversedns"
+			"path": "scandalorian-reversdns-engine"
 		},
 		{
-			"path": "ingest"
+			"path": "scandalorian-application-engine"
 		},
 		{
-			"path": "discovery-engine"
+			"path": "scandalorian-collector"
 		},
 		{
-			"path": "argocd"
+			"path": "scandalorian-zonewalk-engine"
 		}
 	],
 	"settings": {}

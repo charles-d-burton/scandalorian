@@ -1,0 +1,24 @@
+[submodule "scandalorian-types"]
+	path = scandalorian-types
+	url = git@github.com:charles-d-burton/scandalorian-types.git
+[submodule "scandalorian-ingest"]
+	path = scandalorian-ingest
+	url = git@github.com:charles-d-burton/scandalorian-ingest.git
+[submodule "scandalorian-scan-engine"]
+	path = scandalorian-scan-engine
+	url = git@github.com:charles-d-burton/scandalorian-scan-engine.git
+[submodule "scandalorian-discovery-engine"]
+	path = scandalorian-discovery-engine
+	url = git@github.com:charles-d-burton/scandalorian-discovery-engine.git
+[submodule "scandalorian-reversdns-engine"]
+	path = scandalorian-reversdns-engine
+	url = git@github.com:charles-d-burton/scandalorian-reversdns-engine.git
+[submodule "scandalorian-application-engine"]
+	path = scandalorian-application-engine
+	url = git@github.com:charles-d-burton/scandalorian-application-engine.git
+[submodule "scandalorian-collector"]
+	path = scandalorian-collector
+	url = git@github.com:charles-d-burton/scandalorian-collector.git
+[submodule "scandalorian-zonewalk-engine"]
+	path = scandalorian-zonewalk-engine
+	url = git@github.com:charles-d-burton/scandalorian-zonewalk-engine.git

@@ -10,8 +10,8 @@ images:
   newName: charlesdburton/scandalorian-discovery-engine
   newTag: 8807fd3446b17573308fa5e20d5a1decfd11e535
 - name: charlesdburton/scandalorian-ingest:latest
-  newName: charlesdburton/scandalorian-discovery-engines
-  newTag: 6811cb2626bc889ff4d637e9e8fc122ebe44c19d
+  newName: charlesdburton/scandalorian-ingest
+  newTag: a91b0cab795b2d6edde8f2c326f294d804a4dacc
 - name: charlesdburton/scandalorian-reversedns-engine:latest
   newName: charlesdburton/scandalorian-reversedns-engine
   newTag: f7da210e875d578d6c152ceaa1448b145ec35f7f

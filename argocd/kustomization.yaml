@@ -11,7 +11,7 @@ images:
   newTag: f7da210e875d578d6c152ceaa1448b145ec35f7f
 - name: charlesdburton/scandalorian-ingest:latest
   newName: charlesdburton/scandalorian-ingest
-  newTag: f7da210e875d578d6c152ceaa1448b145ec35f7f
+  newTag: a91b0cab795b2d6edde8f2c326f294d804a4dacc
 - name: charlesdburton/scandalorian-reversedns-engine:latest
   newName: charlesdburton/scandalorian-reversedns-engine
   newTag: f7da210e875d578d6c152ceaa1448b145ec35f7f

@@ -1,1 +1,0 @@
-vulscanoutput='<id>{id}</id><product>{product}</product><version>{version}</version>'

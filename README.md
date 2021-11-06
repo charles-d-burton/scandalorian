@@ -30,3 +30,8 @@ Application Level Scanning Tool
 
 Result Collector for Saving Scan Results
 [Scandalorian Collector](https://github.com/charles-d-burton/scandalorian-collector)
+
+
+## TODOS
+
+My documentation sucks ass, I should fix it.

@@ -34,4 +34,4 @@ Result Collector for Saving Scan Results
 
 ## TODOS
 
-My documentation sucks ass, I should fix it.
+My documentation sucks, I should fix it.

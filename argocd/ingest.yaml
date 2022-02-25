@@ -36,6 +36,8 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "500m"
+        ports:
+          - containerPort: 9090
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
 ---

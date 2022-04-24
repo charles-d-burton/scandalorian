@@ -24,11 +24,11 @@ spec:
       - image: charlesdburton/scandalorian-discovery-engine:latest
         imagePullPolicy: Always
         env:
-        - name: DISCOVERY_HOST
+        - name: DISCOVERY_BUSHOST
           value: "nats.default.svc"
-        - name: DISCOVER_PORT
+        - name: DISCOVER_BUSPORT
           value: "4222"
-        - name: DISCOVERY_LOG_LEVEL
+        - name: DISCOVERY_LOGLEVEL
           value: "info"
         name: scandalorian-discovery
         resources:

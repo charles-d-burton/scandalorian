@@ -29,14 +29,14 @@ spec:
         - name: ENGINE_PORT
           value: "4222"
         - name: ENGINE_LOG_LEVEL
-          value: "debug"
+          value: "info"
         name: scandalorian-discovery
         resources:
           requests:
             memory: "128Mi"
             cpu: "250m"
           limits:
-            memory: "512Mi"
+            memory: "256Mi"
             cpu: "500m"
       restartPolicy: Always
       terminationGracePeriodSeconds: 30

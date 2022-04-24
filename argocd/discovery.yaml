@@ -29,7 +29,7 @@ spec:
         - name: DISCOVERY_BUSPORT
           value: "4222"
         - name: DISCOVERY_LOGLEVEL
-          value: "debug"
+          value: "info"
         name: scandalorian-discovery
         resources:
           requests:

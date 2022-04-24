@@ -26,7 +26,7 @@ spec:
         env:
         - name: DISCOVERY_BUSHOST
           value: "nats.default.svc"
-        - name: DISCOVER_BUSPORT
+        - name: DISCOVERY_BUSPORT
           value: "4222"
         - name: DISCOVERY_LOGLEVEL
           value: "info"

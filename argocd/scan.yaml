@@ -24,11 +24,11 @@ spec:
       - image: charlesdburton/scandalorian-scan-engine:latest
         imagePullPolicy: Always
         env:
-        - name: ENGINE_HOST
+        - name: SCANENGINE_BUSHOST
           value: "nats.default.svc"
-        - name: ENGINE_PORT
+        - name: SCANENGINE_PORT
           value: "4222"
-        - name: ENGINE_LOG_LEVEL
+        - name: SCANENGINE_LOGLEVEL
           value: "debug"
         name: scandalorian-scan
         resources:

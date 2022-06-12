@@ -17,4 +17,4 @@ images:
   newTag: f7da210e875d578d6c152ceaa1448b145ec35f7f
 - name: charlesdburton/scandalorian-scan-engine:latest
   newName: charlesdburton/scandalorian-scan-engine
-  newTag: 784b204e5573dbe0670c9869dbf8bd7114773205
+  newTag: 92cfb0e4314f4b6f684cf9b7731e81bff407accf

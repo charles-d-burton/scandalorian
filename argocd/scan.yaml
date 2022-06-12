@@ -26,7 +26,7 @@ spec:
         env:
         - name: SCANENGINE_BUSHOST
           value: "nats.default.svc"
-        - name: SCANENGINE_PORT
+        - name: SCANENGINE_BUSPORT
           value: "4222"
         - name: SCANENGINE_LOGLEVEL
           value: "debug"

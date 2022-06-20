@@ -24,7 +24,7 @@ spec:
       - image: charlesdburton/scandalorian-ingest:latest
         imagePullPolicy: Always
         env:
-        - name: INGEST_HOST
+        - name: INGEST_BUSHOST
           value: "nats.default.svc"
         - name: INGEST_PORT
           value: "4222"
